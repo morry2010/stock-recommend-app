@@ -39,24 +39,39 @@ if not st.session_state.submitted:
             elif "(3점)" in q:
                 score += 3
 
-        # 성향 판별 및 데이터 설정
+        # 성향 판별 및 상세 종목 포함 데이터 설정
         if score <= 4:
             user_type = "보수형 (Conservative)"
             data = {
                 "자산군": ["국채/채권", "예금/현금", "대형주 주식"],
                 "비중(%)": [60, 30, 10],
+                "추천 예시 상품": [
+                    "국고채 ETF / 단기채권",
+                    "CMA / 정기예금",
+                    "코스피 대형 우량주 (삼성전자 등)",
+                ],
             }
         elif score <= 7:
             user_type = "중립형 (Balanced)"
             data = {
                 "자산군": ["국내/해외 주식", "채권", "현금/원자재"],
                 "비중(%)": [40, 40, 20],
+                "추천 예시 상품": [
+                    "S&P 500 / 미국 배당 다우존스",
+                    "종합 채권 ETF",
+                    "달러 예금 / 금(Gold) 현물",
+                ],
             }
         else:
             user_type = "공격형 (Aggressive)"
             data = {
                 "자산군": ["성장주/해외주식", "가상자산/원자재", "채권"],
                 "비중(%)": [70, 20, 10],
+                "추천 예시 상품": [
+                    "미국 나스닥 100 / 테크 성장주",
+                    "원자재 ETF / 가상자산",
+                    "단기 국고채",
+                ],
             }
 
         # 결과를 세션에 저장
@@ -64,16 +79,18 @@ if not st.session_state.submitted:
         st.session_state.user_type = user_type
         st.session_state.data = data
         st.session_state.submitted = True
-        st.rerun()  # 화면을 새로고침하여 결과 화면으로 전환
+        st.rerun()
 
-# 제출을 완료한 상태일 때 (질문은 사라지고 결과만 나옴)
+# 제출을 완료한 상태일 때 (결과 화면)
 else:
     st.success("설문 진단이 완료되었습니다!")
-    st.subheader(f"📊 진단 점수: {st.session_state.score}점 ➔ **{st.session_state.user_type}**")
+    st.subheader(
+        f"📊 진단 점수: {st.session_state.score}점 ➔ **{st.session_state.user_type}**"
+    )
 
     df = pd.DataFrame(st.session_state.data)
 
-    st.write("### 💡 추천 자산 비중")
+    st.write("### 💡 맞춤 추천 포트폴리오 및 종목 예시")
     st.dataframe(df, use_container_width=True)
 
     # 도넛 차트 출력
