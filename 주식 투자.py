@@ -39,18 +39,13 @@ if not st.session_state.submitted:
             elif "(3점)" in q:
                 score += 3
 
-        # 성향 판별 및 최근 1년 실제 시장 트렌드 반영 수익률 데이터 설정
+        # 성향 판별 및 최근 1년 시장 트렌드 반영 수익률 데이터 설정
         if score <= 4:
             user_type = "보수형 (Conservative)"
             data = {
                 "자산군": ["국채/채권", "예금/현금", "대형주 주식"],
                 "비중(%)": [60, 30, 10],
                 "최근 1년 수익률(%)": [4.2, 3.5, 12.5],
-                "추천 예시 상품": [
-                    "국고채 ETF / 단기채권",
-                    "CMA / 정기예금",
-                    "코스피 대형 우량주 (삼성전자 등)",
-                ],
             }
         elif score <= 7:
             user_type = "중립형 (Balanced)"
@@ -58,11 +53,6 @@ if not st.session_state.submitted:
                 "자산군": ["국내/해외 주식", "채권", "현금/원자재"],
                 "비중(%)": [40, 40, 20],
                 "최근 1년 수익률(%)": [18.2, 4.2, 22.0],
-                "추천 예시 상품": [
-                    "S&P 500 / 미국 배당 다우존스",
-                    "종합 채권 ETF",
-                    "달러 예금 / 금(Gold) 현물",
-                ],
             }
         else:
             user_type = "공격형 (Aggressive)"
@@ -70,11 +60,6 @@ if not st.session_state.submitted:
                 "자산군": ["성장주/해외주식", "가상자산/원자재", "채권"],
                 "비중(%)": [70, 20, 10],
                 "최근 1년 수익률(%)": [28.5, 35.0, 4.2],
-                "추천 예시 상품": [
-                    "미국 나스닥 100 / 테크 성장주",
-                    "원자재 ETF / 가상자산",
-                    "단기 국고채",
-                ],
             }
 
         # 포트폴리오 가중 평균 최근 1년 종합 수익률 계산
@@ -128,6 +113,35 @@ else:
         color="자산군",
     )
     st.plotly_chart(fig_bar, use_container_width=True)
+
+    # 3. 클릭 가능한 나무위키 상세 종목/자산 링크 섹션 추가!
+    st.write("---")
+    st.write("### 🔗 추천 자산 및 상품 설명 (나무위키 바로가기)")
+
+    if "보수형" in st.session_state.user_type:
+        st.markdown(
+            "- 🛡️ **국채/채권**: [국고채](https://namu.wiki/w/%EA%B5%AD%EA%B3%A0%EC%B1%84), [채권](https://namu.wiki/w/%EC%B1%84%EA%B6%8C)"
+        )
+        st.markdown(
+            "- 💵 **예금/현금**: [예금](https://namu.wiki/w/%EC%98%88%EA%B8%88), [CMA](https://namu.wiki/w/CMA)"
+        )
+        st.markdown(
+            "- 🏢 **대형주**: [삼성전자](https://namu.wiki/w/%EC%82%BC%EC%84%B1%EC%0C%84), [현대자동차](https://namu.wiki/w/%현대자동차)"
+        )
+    elif "중립형" in st.session_state.user_type:
+        st.markdown(
+            "- 📈 **주식/ETF**: [S&P 500](https://namu.wiki/w/S%26P%20500), [SCHD](https://namu.wiki/w/SCHD)"
+        )
+        st.markdown(
+            "- 🪙 **원자재/안전자산**: [금(Gold)](https://namu.wiki/w/%EA%B8%88), [달러](https://namu.wiki/w/%EB%8B%AC%EB%9F%AC)"
+        )
+    else:
+        st.markdown(
+            "- 🚀 **성장주/테크**: [테슬라](https://namu.wiki/w/%ED%85%8C%EC%8A%AC%EB%9D%BC), [엔비디아](https://namu.wiki/w/%EC%97%94%EB%B9%84%EB%94%94%EC%95%84), [애플](https://namu.wiki/w/%EC%95%A0%ED%94%8C)"
+        )
+        st.markdown(
+            "- 💎 **가상자산/원자재**: [비트코인](https://namu.wiki/w/%EB%B9%84%ED%8A%B8%EC%BD%94%EC%9D%B8), [원자재](https://namu.wiki/w/%EC%9B%90%EC%9E%90%EC%9E%90)"
+        )
 
     # 다시 하기 버튼
     if st.button("🔄 다시 진단하기"):
