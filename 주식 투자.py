@@ -13,7 +13,6 @@ if not st.session_state.submitted:
     st.write("아래 질문에 답하고 **[결과 확인하기]** 버튼을 눌러주세요!")
     st.divider()
 
-    # 점수가 보이지 않는 깔끔한 선택지
     q1 = st.radio(
         "1. 당신의 투자 목적은 무엇인가요?",
         [
@@ -38,7 +37,6 @@ if not st.session_state.submitted:
     )
 
     if st.button("🚀 내 투자 성향 및 자산 배분 결과 보기"):
-        # 선택한 답변 내용에 따라 자동으로 점수 부여
         score = 0
 
         if q1 == "원금 보존이 가장 중요함":
@@ -62,26 +60,26 @@ if not st.session_state.submitted:
         else:
             score += 3
 
-        # 성향 판별 및 최근 1년 시장 트렌드 반영 수익률 데이터 설정
+        # 성향별 자산 배분 (보수형: 주식 40%, 채권 40%, 예금/현금 20%)
         if score <= 4:
             user_type = "보수형 (Conservative)"
             data = {
-                "자산군": ["국채/채권", "예금/현금", "대형주 주식"],
-                "비중(%)": [60, 30, 10],
-                "최근 1년 수익률(%)": [4.2, 3.5, 12.5],
+                "자산군": ["대형 우량주", "채권/국고채", "예금/현금"],
+                "비중(%)": [40, 40, 20],
+                "최근 1년 수익률(%)": [12.5, 4.2, 3.5],
             }
         elif score <= 7:
-            user_type = "중립형 (Balanced)"
+            user_type = "중립형 (Balanced - 기본 6:4)"
             data = {
-                "자산군": ["국내/해외 주식", "채권", "현금/원자재"],
-                "비중(%)": [40, 40, 20],
-                "최근 1년 수익률(%)": [18.2, 4.2, 22.0],
+                "자산군": ["주식 (성장/대형)", "채권", "원자재/현금"],
+                "비중(%)": [60, 30, 10],
+                "최근 1년 수익률(%)": [18.2, 4.2, 15.0],
             }
         else:
             user_type = "공격형 (Aggressive)"
             data = {
-                "자산군": ["성장주/해외주식", "가상자산/원자재", "채권"],
-                "비중(%)": [70, 20, 10],
+                "자산군": ["고성장 주식/테크", "가상자산/원자재", "채권"],
+                "비중(%)": [80, 15, 5],
                 "최근 1년 수익률(%)": [28.5, 35.0, 4.2],
             }
 
@@ -137,33 +135,33 @@ else:
     )
     st.plotly_chart(fig_bar, use_container_width=True)
 
-    # 3. 보내주신 링크가 반영된 나무위키 바로가기 섹션
+    # 3. 나무위키 바로가기 섹션 (현대자동차 링크 포함)
     st.write("---")
     st.write("### 🔗 추천 자산 및 상품 설명 (나무위키 바로가기)")
 
     if "보수형" in st.session_state.user_type:
         st.markdown(
-            "- 🛡️ **국채/채권**: [국고채](https://namu.wiki/w/%EA%B5%AD%EA%B3%A0%EC%B1%84), [채권](https://namu.wiki/w/%EC%B1%84%EA%B6%8C)"
+            "- 🏢 **대형주**: [현대자동차](https://namu.wiki/w/%ED%98%84%EB%8C%80%EC%9E%90%EB%8F%99%EC%B0%A8), [삼성전자](https://namu.wiki/w/%EC%82%BC%EC%84%B1%EC%A0%84%EC%9E%90)"
         )
         st.markdown(
-            "- 💵 **예금/현금**: [예금](https://namu.wiki/w/%EC%98%88%EA%B8%88), [CMA](https://namu.wiki/w/CMA)"
+            "- 🛡️ **채권/국고채**: [국고채](https://namu.wiki/w/%EA%B5%AD%EA%B3%A0%EC%B1%84), [채권](https://namu.wiki/w/%EC%B1%84%EA%B6%8C)"
         )
         st.markdown(
-            "- 🏢 **대형주**: [삼성전자](https://namu.wiki/w/%EC%82%BC%EC%84%B1%EC%A0%84%EC%9E%90), [현대자동차](https://namu.wiki/w/%ED%98%84%EB%8C%80%EC%9E%90%EB%8F%99%EC%B0%A8)"
+            "- 💵 **예금/현금**: [예금](https://namu.wiki/w/%EC%98%88%EA%B8%88)"
         )
     elif "중립형" in st.session_state.user_type:
         st.markdown(
             "- 📈 **주식/ETF**: [S&P 500](https://namu.wiki/w/S%26P%20500), [SCHD](https://namu.wiki/w/SCHD)"
         )
         st.markdown(
-            "- 🪙 **원자재/안전자산**: [금](https://namu.wiki/w/%EA%B8%88), [달러](https://namu.wiki/w/%EB%B9%84%EC%9E%90)"
+            "- 🛡️ **채권**: [채권](https://namu.wiki/w/%EC%B1%84%EA%B6%8C)"
         )
     else:
         st.markdown(
-            "- 🚀 **성장주/테크**: [테슬라](https://namu.wiki/w/%ED%85%8C%EC%8A%AC%EB%9D%BC), [엔비디아](https://namu.wiki/w/%EC%97%94%EB%B9%84%EB%94%94%EC%95%84), [애플](https://namu.wiki/w/%EC%95%A0%ED%94%8C)"
+            "- 🚀 **성장주/테크**: [테슬라](https://namu.wiki/w/%ED%85%8C%EC%8A%AC%EB%9D%BC), [엔비디아](https://namu.wiki/w/%EC%97%94%EB%B9%84%EB%94%94%EC%95%84)"
         )
         st.markdown(
-            "- 💎 **가상자산/원자재**: [비트코인](https://namu.wiki/w/%EB%B9%84%ED%8A%B8%EC%BD%94%EC%9D%B8), [원자재](https://namu.wiki/w/%EC%9B%90%EC%9E%90%EC%9E%90)"
+            "- 💎 **가상자산**: [비트코인](https://namu.wiki/w/%EB%B9%84%ED%8A%B8%EC%BD%94%EC%9D%B8)"
         )
 
     # 다시 하기 버튼
