@@ -39,12 +39,13 @@ if not st.session_state.submitted:
             elif "(3점)" in q:
                 score += 3
 
-        # 성향 판별 및 상세 종목 포함 데이터 설정
+        # 성향 판별 및 자산별 비중, 예상 수익률(% 연간 기준 가상 데이터) 설정
         if score <= 4:
             user_type = "보수형 (Conservative)"
             data = {
                 "자산군": ["국채/채권", "예금/현금", "대형주 주식"],
                 "비중(%)": [60, 30, 10],
+                "예상 연간 수익률(%)": [3.5, 2.5, 7.0],
                 "추천 예시 상품": [
                     "국고채 ETF / 단기채권",
                     "CMA / 정기예금",
@@ -56,6 +57,7 @@ if not st.session_state.submitted:
             data = {
                 "자산군": ["국내/해외 주식", "채권", "현금/원자재"],
                 "비중(%)": [40, 40, 20],
+                "예상 연간 수익률(%)": [8.5, 4.0, 5.0],
                 "추천 예시 상품": [
                     "S&P 500 / 미국 배당 다우존스",
                     "종합 채권 ETF",
@@ -67,6 +69,7 @@ if not st.session_state.submitted:
             data = {
                 "자산군": ["성장주/해외주식", "가상자산/원자재", "채권"],
                 "비중(%)": [70, 20, 10],
+                "예상 연간 수익률(%)": [12.0, 15.0, 4.0],
                 "추천 예시 상품": [
                     "미국 나스닥 100 / 테크 성장주",
                     "원자재 ETF / 가상자산",
@@ -74,10 +77,16 @@ if not st.session_state.submitted:
                 ],
             }
 
+        # 포트폴리오 가중 평균 예상 수익률 계산 (비중 × 수익률의 합)
+        weights = [w / 100 for w in data["비중(%)"]]
+        returns = data["예상 연간 수익률(%)"]
+        portfolio_return = sum(w * r for w, r in zip(weights, returns))
+
         # 결과를 세션에 저장
         st.session_state.score = score
         st.session_state.user_type = user_type
         st.session_state.data = data
+        st.session_state.portfolio_return = round(portfolio_return, 2)
         st.session_state.submitted = True
         st.rerun()
 
@@ -88,9 +97,15 @@ else:
         f"📊 진단 점수: {st.session_state.score}점 ➔ **{st.session_state.user_type}**"
     )
 
+    # 전체 포트폴리오 기대 수익률 강조 박스
+    st.metric(
+        label="✨ 이 포트폴리오의 예상 종합 연간 수익률",
+        value=f"{st.session_state.portfolio_return}%",
+    )
+
     df = pd.DataFrame(st.session_state.data)
 
-    st.write("### 💡 맞춤 추천 포트폴리오 및 종목 예시")
+    st.write("### 💡 자산군별 세부 비중 및 예상 수익률")
     st.dataframe(df, use_container_width=True)
 
     # 도넛 차트 출력
