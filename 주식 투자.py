@@ -13,7 +13,7 @@ if not st.session_state.submitted:
     st.write("아래 질문에 답하고 **[결과 확인하기]** 버튼을 눌러주세요!")
     st.divider()
 
-    # 화면에는 점수를 빼고 깔끔한 문장만 표시합니다.
+    # 점수가 보이지 않는 깔끔한 선택지
     q1 = st.radio(
         "1. 당신의 투자 목적은 무엇인가요?",
         [
@@ -41,7 +41,6 @@ if not st.session_state.submitted:
         # 선택한 답변 내용에 따라 자동으로 점수 부여
         score = 0
 
-        # 1번 문항 점수 계산
         if q1 == "원금 보존이 가장 중요함":
             score += 1
         elif q1 == "적정한 수익과 안정성 추구":
@@ -49,7 +48,6 @@ if not st.session_state.submitted:
         else:
             score += 3
 
-        # 2번 문항 점수 계산
         if q2 == "1년 미만 단기":
             score += 1
         elif q2 == "1년~3년 중기":
@@ -57,7 +55,6 @@ if not st.session_state.submitted:
         else:
             score += 3
 
-        # 3번 문항 점수 계산
         if q3 == "바로 매도해서 손실을 최소화함":
             score += 1
         elif q3 == "지켜보며 회복을 기다림":
@@ -140,7 +137,7 @@ else:
     )
     st.plotly_chart(fig_bar, use_container_width=True)
 
-    # 3. 나무위키 바로가기 섹션
+    # 3. 보내주신 링크가 반영된 나무위키 바로가기 섹션
     st.write("---")
     st.write("### 🔗 추천 자산 및 상품 설명 (나무위키 바로가기)")
 
@@ -159,7 +156,7 @@ else:
             "- 📈 **주식/ETF**: [S&P 500](https://namu.wiki/w/S%26P%20500), [SCHD](https://namu.wiki/w/SCHD)"
         )
         st.markdown(
-            "- 🪙 **원자재/안전자산**: [금](https://namu.wiki/w/%EA%B8%88), [달러](https://namu.wiki/w/%EB%8B%AC%EB%9F%AC)"
+            "- 🪙 **원자재/안전자산**: [금](https://namu.wiki/w/%EA%B8%88), [달러](https://namu.wiki/w/%EB%B9%84%EC%9E%90)"
         )
     else:
         st.markdown(
