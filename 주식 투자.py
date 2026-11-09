@@ -60,7 +60,7 @@ if not st.session_state.submitted:
         else:
             score += 3
 
-        # 성향별 자산 배분 (보수형: 주식 40%, 채권 40%, 예금/현금 20%)
+        # 성향별 자산 배분 데이터
         if score <= 4:
             user_type = "보수형 (Conservative)"
             data = {
@@ -110,6 +110,9 @@ else:
     )
 
     df = pd.DataFrame(st.session_state.data)
+
+    # 핵심: 표의 왼쪽 번호(인덱스)를 0, 1, 2가 아니라 1, 2, 3으로 설정합니다!
+    df.index = range(1, len(df) + 1)
 
     st.write("### 💡 자산군별 세부 비중 및 최근 1년 수익률")
     st.dataframe(df, use_container_width=True)
