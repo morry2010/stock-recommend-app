@@ -13,31 +13,57 @@ if not st.session_state.submitted:
     st.write("아래 질문에 답하고 **[결과 확인하기]** 버튼을 눌러주세요!")
     st.divider()
 
+    # 화면에는 점수를 빼고 깔끔한 문장만 표시합니다.
     q1 = st.radio(
         "1. 당신의 투자 목적은 무엇인가요?",
-        ["원금 보존이 가장 중요함 (1점)", "적정한 수익과 안정성 추구 (2점)", "고수익을 위해 손실 위험 감수 (3점)"],
+        [
+            "원금 보존이 가장 중요함",
+            "적정한 수익과 안정성 추구",
+            "고수익을 위해 손실 위험 감수",
+        ],
     )
 
     q2 = st.radio(
         "2. 투자 기간은 어느 정도를 생각하고 계신가요?",
-        ["1년 미만 단기 (1점)", "1년~3년 중기 (2점)", "3년 이상 장기 (3점)"],
+        ["1년 미만 단기", "1년~3년 중기", "3년 이상 장기"],
     )
 
     q3 = st.radio(
         "3. 투자한 자산의 원금 손실이 발생한다면 어떻게 하실 건가요?",
-        ["바로 매도해서 손실을 최소화함 (1점)", "지켜보며 회복을 기다림 (2점)", "추가 매수 기회로 활용함 (3점)"],
+        [
+            "바로 매도해서 손실을 최소화함",
+            "지켜보며 회복을 기다림",
+            "추가 매수 기회로 활용함",
+        ],
     )
 
     if st.button("🚀 내 투자 성향 및 자산 배분 결과 보기"):
-        # 점수 계산
+        # 선택한 답변 내용에 따라 자동으로 점수 부여
         score = 0
-        for q in [q1, q2, q3]:
-            if "(1점)" in q:
-                score += 1
-            elif "(2점)" in q:
-                score += 2
-            elif "(3점)" in q:
-                score += 3
+
+        # 1번 문항 점수 계산
+        if q1 == "원금 보존이 가장 중요함":
+            score += 1
+        elif q1 == "적정한 수익과 안정성 추구":
+            score += 2
+        else:
+            score += 3
+
+        # 2번 문항 점수 계산
+        if q2 == "1년 미만 단기":
+            score += 1
+        elif q2 == "1년~3년 중기":
+            score += 2
+        else:
+            score += 3
+
+        # 3번 문항 점수 계산
+        if q3 == "바로 매도해서 손실을 최소화함":
+            score += 1
+        elif q3 == "지켜보며 회복을 기다림":
+            score += 2
+        else:
+            score += 3
 
         # 성향 판별 및 최근 1년 시장 트렌드 반영 수익률 데이터 설정
         if score <= 4:
@@ -114,7 +140,7 @@ else:
     )
     st.plotly_chart(fig_bar, use_container_width=True)
 
-    # 3. 클릭 가능한 나무위키 상세 종목/자산 링크 섹션 추가!
+    # 3. 나무위키 바로가기 섹션
     st.write("---")
     st.write("### 🔗 추천 자산 및 상품 설명 (나무위키 바로가기)")
 
@@ -126,14 +152,14 @@ else:
             "- 💵 **예금/현금**: [예금](https://namu.wiki/w/%EC%98%88%EA%B8%88), [CMA](https://namu.wiki/w/CMA)"
         )
         st.markdown(
-            "- 🏢 **대형주**: [삼성전자](https://namu.wiki/w/%EC%82%BC%EC%84%B1%EC%0C%84), [현대자동차](https://namu.wiki/w/%현대자동차)"
+            "- 🏢 **대형주**: [삼성전자](https://namu.wiki/w/%EC%82%BC%EC%84%B1%EC%A0%84%EC%9E%90), [현대자동차](https://namu.wiki/w/%ED%98%84%EB%8C%80%EC%9E%90%EB%8F%99%EC%B0%A8)"
         )
     elif "중립형" in st.session_state.user_type:
         st.markdown(
             "- 📈 **주식/ETF**: [S&P 500](https://namu.wiki/w/S%26P%20500), [SCHD](https://namu.wiki/w/SCHD)"
         )
         st.markdown(
-            "- 🪙 **원자재/안전자산**: [금(Gold)](https://namu.wiki/w/%EA%B8%88), [달러](https://namu.wiki/w/%EB%8B%AC%EB%9F%AC)"
+            "- 🪙 **원자재/안전자산**: [금](https://namu.wiki/w/%EA%B8%88), [달러](https://namu.wiki/w/%EB%8B%AC%EB%9F%AC)"
         )
     else:
         st.markdown(
