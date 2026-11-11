@@ -3,11 +3,11 @@ import plotly.express as px
 import streamlit as st
 import yfinance as yf
 
-st.title("📈 맞춤형 투자 성향 진단 및 자산 배분")
+st.title("맞춤형 투자 성향 진단 및 자산 배분")
 
 
-# --- [야후 파이낸스 데이터 연동 함수] ---
-@st.cache_data(ttl=3600)  # 데이터 로딩 속도 최적화를 위한 캐싱
+# --- [야후 파이낸스 데이터 연동 함수 (배당 오류 수정 반영)] ---
+@st.cache_data(ttl=3600)
 def get_asset_data(ticker_symbol, period="1y", fallback_return=5.0):
     try:
         ticker = yf.Ticker(ticker_symbol)
@@ -20,11 +20,14 @@ def get_asset_data(ticker_symbol, period="1y", fallback_return=5.0):
             latest = hist["Close"].iloc[-1]
             ret = round(((latest - start) / start) * 100, 2)
 
-        # 배당수익률 가져오기 (info에서 추출, 없으면 0)
+        # 배당수익률 가져오기 (단위 버그 방지 처리)
         info = ticker.info
         div_yield = info.get("dividendYield", 0)
         if div_yield is not None:
-            div_yield = round(div_yield * 100, 2)
+            if div_yield > 1:
+                div_yield = round(div_yield, 2)
+            else:
+                div_yield = round(div_yield * 100, 2)
         else:
             div_yield = 0.0
 
@@ -38,8 +41,7 @@ with st.sidebar:
     st.header("맞춤형 자산 배분 포트폴리오")
     st.divider()
 
-    # 사이드바에서 섹터별 주식 바로보기 메뉴 제공 (선택만 가능)
-    st.subheader("🔍 섹터별 주요 종목 탐색")
+    st.subheader("섹터별 주요 종목 탐색")
     selected_sector = st.selectbox(
         "관심 있는 섹터를 선택하세요:",
         [
@@ -331,7 +333,7 @@ if not st.session_state.submitted:
 else:
     st.success("설문 진단이 완료되었습니다!")
     st.subheader(
-        f"📊 맞춤 진단 결과 ➔ **{st.session_state.user_type}**"
+        f"맞춤 진단 결과 ➔ **{st.session_state.user_type}**"
     )
 
     # 기간 선택 셀렉트박스 추가 (1년, 3년, 5년)
@@ -341,16 +343,13 @@ else:
             "수익률 기간 선택", ["최근 1년", "최근 3년", "최근 5년"]
         )
 
-    # 기간 매핑
     period_map = {"최근 1년": "1y", "최근 3년": "3y", "최근 5년": "5y"}
     selected_period = period_map[period_label]
 
-    # 세션에 저장된 자산 목록을 기반으로 동적 데이터 생성
     assets = st.session_state.assets
     names = [item["name"] for item in assets]
     weights = [item["weight"] for item in assets]
 
-    # 선택된 기간에 맞춰 수익률 및 배당수익률 불러오기
     returns = []
     div_yields = []
     for item in assets:
@@ -360,17 +359,15 @@ else:
         returns.append(ret)
         div_yields.append(div)
 
-    # 종합 포트폴리오 가중 평균 수익률 계산
     portfolio_return = sum(
         (w / 100) * r for w, r in zip(weights, returns)
     )
 
     st.metric(
-        label=f"🔥 이 포트폴리오의 [{period_label}] 환산 종합 수익률",
+        label=f"이 포트폴리오의 [{period_label}] 환산 종합 수익률",
         value=f"+{round(portfolio_return, 2)}%",
     )
 
-    # 데이터프레임 구성 (자산군, 비중, 선택기간 수익률, 배당수익률)
     df_data = {
         "자산군": names,
         "비중(%)": weights,
@@ -380,10 +377,9 @@ else:
     df = pd.DataFrame(df_data)
     df.index = range(1, len(df) + 1)
 
-    st.write(f"### 💡 자산군별 세부 비중 및 {period_label} 성과 / 배당")
+    st.write(f"### 자산군별 세부 비중 및 {period_label} 성과 / 배당")
     st.dataframe(df, use_container_width=True)
 
-    # 도넛 차트 (자산 배분 비중)
     fig_pie = px.pie(
         df,
         values="비중(%)",
@@ -395,7 +391,7 @@ else:
 
     # --- [영역 1] 내 설문 진단 결과에 따른 맞춤 추천 자산 ---
     st.write("---")
-    st.write("### 🎯 내 진단 결과 맞춤 추천 자산 및 실시간 시세")
+    st.write("### 내 진단 결과 맞춤 추천 자산 및 실시간 시세")
 
     if st.session_state.user_type == "보수형 - 노후 안정 지향형":
         st.markdown(
@@ -491,6 +487,6 @@ else:
 
     # 다시 하기 버튼
     st.write("---")
-    if st.button("🔄 다시 진단하기"):
+    if st.button("다시 진단하기"):
         st.session_state.submitted = False
         st.rerun()
