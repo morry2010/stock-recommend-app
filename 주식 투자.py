@@ -9,16 +9,16 @@ with st.sidebar:
     st.header("맞춤형 자산 배분 포트폴리오")
     st.divider()
 
-    # 사이드바에서 섹터별 주식 바로보기 메뉴 제공
+    # 사이드바에서 섹터별 주식 바로보기 메뉴 제공 (선택만 가능)
     st.subheader("🔍 섹터별 주요 종목 탐색")
     selected_sector = st.selectbox(
         "관심 있는 섹터를 선택하세요:",
         [
             "선택 안 함 (기본 보기)",
-            "🚀 테크/빅테크",
-            "⚡ 2차전지/에너지",
-            "💊 헬스케어/바이오",
-            "🏦 금융/고배당",
+            "테크/빅테크",
+            "2차전지/에너지",
+            "헬스케어/바이오",
+            "금융/고배당",
         ],
     )
     st.divider()
@@ -64,7 +64,7 @@ if not st.session_state.submitted:
         ],
     )
 
-    if st.button("🚀 내 투자 성향 및 자산 배분 결과 보기"):
+    if st.button("내 투자 성향 및 자산 배분 결과 보기"):
         # Q1 (위험 성향): 1~3점
         if "원금 손실은 절대" in q1:
             s1 = 1
@@ -232,10 +232,10 @@ else:
         )
     else:
         st.markdown(
-            "- 🚀 **테슬라**: [나무위키](https://namu.wiki/w/%ED%85%8C%EC%8A%AC%EB%9D%BC) | [야후 파이낸스](https://finance.yahoo.com/quote/TSLA/)"
+            "- **테슬라**: [나무위키](https://namu.wiki/w/%ED%85%8C%EC%8A%AC%EB%9D%BC) | [야후 파이낸스](https://finance.yahoo.com/quote/TSLA/)"
         )
         st.markdown(
-            "- 🚀 **엔비디아**: [나무위키](https://namu.wiki/w/%EC%97%94%EB%B9%84%EB%94%94%EC%95%84) | [야후 파이낸스](https://finance.yahoo.com/quote/NVDA/)"
+            "- **엔비디아**: [나무위키](https://namu.wiki/w/%EC%97%94%EB%B9%84%EB%94%94%EC%95%84) | [야후 파이낸스](https://finance.yahoo.com/quote/NVDA/)"
         )
         st.markdown(
             "- 💎 **비트코인**: [나무위키](https://namu.wiki/w/%EB%B9%84%ED%8A%B8%EC%BD%94%EC%9D%B8) | [야후 파이낸스](https://finance.yahoo.com/quote/BTC-USD/)"
@@ -246,28 +246,28 @@ else:
         st.write("---")
         st.write(f"### 🔍 사이드바 선택 섹터: [{selected_sector}]")
 
-        if selected_sector == "🚀 테크/빅테크":
+        if selected_sector == "테크/빅테크":
             st.markdown(
-                "- 🚀 **엔비디아**: [나무위키](https://namu.wiki/w/%EC%97%94%EB%B9%84%EB%94%94%EC%95%84) | [야후 파이낸스](https://finance.yahoo.com/quote/NVDA/)"
+                "- **엔비디아**: [나무위키](https://namu.wiki/w/%EC%97%94%EB%B9%84%EB%94%94%EC%95%84) | [야후 파이낸스](https://finance.yahoo.com/quote/NVDA/)"
             )
             st.markdown(
-                "- 🚀 **테슬라**: [나무위키](https://namu.wiki/w/%ED%85%8C%EC%8A%AC%EB%9D%BC) | [야후 파이낸스](https://finance.yahoo.com/quote/TSLA/)"
+                "- **테슬라**: [나무위키](https://namu.wiki/w/%ED%85%8C%EC%8A%AC%EB%9D%BC) | [야후 파이낸스](https://finance.yahoo.com/quote/TSLA/)"
             )
             st.markdown(
                 "- 🍏 **애플**: [나무위키](https://namu.wiki/w/%EC%95%A0%ED%94%8C(%EA%B8%B0%EC%97%85)) | [야후 파이낸스](https://finance.yahoo.com/quote/AAPL/)"
             )
-        elif selected_sector == "⚡ 2차전지/에너지":
+        elif selected_sector == "2차전지/에너지":
             st.markdown(
                 "- 🔋 **LG에너지솔루션**: [나무위키](https://namu.wiki/w/LG%EC%97%90%EB%84%88%EC%A7%80%EC%86%94%EB%A3%A8%EC%85%98) | [네이버 증권](https://finance.naver.com/item/main.naver?code=373220)"
             )
             st.markdown(
                 "- 🔋 **삼성SDI**: [나무위키](https://namu.wiki/w/%EC%82%BC%EC%84%B1SDI) | [네이버 증권](https://finance.naver.com/item/main.naver?code=006400)"
             )
-        elif selected_sector == "💊 헬스케어/바이오":
+        elif selected_sector == "헬스케어/바이오":
             st.markdown(
                 "- 🧬 **삼성바이오로직스**: [나무위키](https://namu.wiki/w/%EC%82%BC%EC%84%B1%EB%B0%94%EC%9D%B4%EC%98%A4%EB%A1%9C%EC%A7%85%EC%8A%A4) | [네이버 증권](https://finance.naver.com/item/main.naver?code=207940)"
             )
-        elif selected_sector == "🏦 금융/고배당":
+        elif selected_sector == "금융/고배당":
             st.markdown(
                 "- 💰 **SCHD ETF**: [SCHD (나무위키)](https://namu.wiki/w/SCHD) | [야후 파이낸스](https://finance.yahoo.com/quote/SCHD/)"
             )
