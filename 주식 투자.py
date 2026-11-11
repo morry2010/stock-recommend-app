@@ -201,34 +201,34 @@ else:
 
     if st.session_state.user_type == "보수형 - 노후 안정 지향형":
         st.markdown(
-            "- 🛡️ **국고채**: [국고채 (나무위키)](https://namu.wiki/w/%EA%B5%AD%EA%B3%A0%EC%B1%84)"
+            "- **국고채**: [국고채 (나무위키)](https://namu.wiki/w/%EA%B5%AD%EA%B3%A0%EC%B1%84)"
         )
         st.markdown(
-            "- 🏢 **삼성전자**: [나무위키](https://namu.wiki/w/%EC%82%BC%EC%84%B1%EC%A0%84%EC%9E%90) | [네이버 증권](https://finance.naver.com/item/main.naver?code=005930)"
+            "- **삼성전자**: [나무위키](https://namu.wiki/w/%EC%82%BC%EC%84%B1%EC%A0%84%EC%9E%90) | [네이버 증권](https://finance.naver.com/item/main.naver?code=005930)"
         )
         st.markdown(
-            "- 🪙 **금(Gold)**: [나무위키](https://namu.wiki/w/%EA%B8%88) | [네이버 금시세](https://finance.naver.com/marketindex/goldDetail.naver)"
+            "- **금(Gold)**: [나무위키](https://namu.wiki/w/%EA%B8%88) | [네이버 금시세](https://finance.naver.com/marketindex/goldDetail.naver)"
         )
     elif st.session_state.user_type == "보수형 - 목돈 마련 안정형":
         st.markdown(
-            "- 📈 **채권형 ETF**: [채권 (나무위키)](https://namu.wiki/w/%EC%B1%84%EA%B6%8C)"
+            "- **채권형 ETF**: [채권 (나무위키)](https://namu.wiki/w/%EC%B1%84%EA%B6%8C)"
         )
         st.markdown(
-            "- 🏢 **현대자동차**: [나무위키](https://namu.wiki/w/%ED%98%84%EB%8C%80%EC%9E%90%EB%8F%99%EC%B0%A8) | [네이버 증권](https://finance.naver.com/item/main.naver?code=005380)"
+            "- **현대자동차**: [나무위키](https://namu.wiki/w/%ED%98%84%EB%8C%80%EC%9E%90%EB%8F%99%EC%B0%A8) | [네이버 증권](https://finance.naver.com/item/main.naver?code=005380)"
         )
     elif st.session_state.user_type == "보수형 - 단기 자금 파킹형":
         st.markdown(
-            "- 💵 **CMA/MMF**: [CMA (나무위키)](https://namu.wiki/w/CMA) | [MMF (나무위키)](https://namu.wiki/w/MMF)"
+            "- **CMA/MMF**: [CMA (나무위키)](https://namu.wiki/w/CMA) | [MMF (나무위키)](https://namu.wiki/w/MMF)"
         )
         st.markdown(
-            "- 🛡️ **단기 국채**: [국고채 (나무위키)](https://namu.wiki/w/%EA%B5%AD%EA%B3%A0%EC%B1%84)"
+            "- **단기 국채**: [국고채 (나무위키)](https://namu.wiki/w/%EA%B5%AD%EA%B3%A0%EC%B1%84)"
         )
     elif "중립형" in st.session_state.user_type:
         st.markdown(
-            "- 📈 **S&P 500 ETF**: [나무위키](https://namu.wiki/w/S%26P%20500) | [야후 파이낸스](https://finance.yahoo.com/quote/VOO/)"
+            "- **S&P 500 ETF**: [나무위키](https://namu.wiki/w/S%26P%20500) | [야후 파이낸스](https://finance.yahoo.com/quote/VOO/)"
         )
         st.markdown(
-            "- 🪙 **금(Gold)**: [나무위키](https://namu.wiki/w/%EA%B8%88) | [네이버 금시세](https://finance.naver.com/marketindex/goldDetail.naver)"
+            "- **금(Gold)**: [나무위키](https://namu.wiki/w/%EA%B8%88) | [네이버 금시세](https://finance.naver.com/marketindex/goldDetail.naver)"
         )
     else:
         st.markdown(
@@ -238,13 +238,13 @@ else:
             "- **엔비디아**: [나무위키](https://namu.wiki/w/%EC%97%94%EB%B9%84%EB%94%94%EC%95%84) | [야후 파이낸스](https://finance.yahoo.com/quote/NVDA/)"
         )
         st.markdown(
-            "- 💎 **비트코인**: [나무위키](https://namu.wiki/w/%EB%B9%84%ED%8A%B8%EC%BD%94%EC%9D%B8) | [야후 파이낸스](https://finance.yahoo.com/quote/BTC-USD/)"
+            "- **비트코인**: [나무위키](https://namu.wiki/w/%EB%B9%84%ED%8A%B8%EC%BD%94%EC%9D%B8) | [야후 파이낸스](https://finance.yahoo.com/quote/BTC-USD/)"
         )
 
     # --- [영역 2] 사이드바에서 선택한 섹터별 주요 종목 (별도 분리) ---
     if selected_sector != "선택 안 함 (기본 보기)":
         st.write("---")
-        st.write(f"### 🔍 사이드바 선택 섹터: [{selected_sector}]")
+        st.write(f"### 사이드바 선택 섹터: [{selected_sector}]")
 
         if selected_sector == "테크/빅테크":
             st.markdown(
@@ -254,25 +254,25 @@ else:
                 "- **테슬라**: [나무위키](https://namu.wiki/w/%ED%85%8C%EC%8A%AC%EB%9D%BC) | [야후 파이낸스](https://finance.yahoo.com/quote/TSLA/)"
             )
             st.markdown(
-                "- 🍏 **애플**: [나무위키](https://namu.wiki/w/%EC%95%A0%ED%94%8C(%EA%B8%B0%EC%97%85)) | [야후 파이낸스](https://finance.yahoo.com/quote/AAPL/)"
+                "- **애플**: [나무위키](https://namu.wiki/w/%EC%95%A0%ED%94%8C(%EA%B8%B0%EC%97%85)) | [야후 파이낸스](https://finance.yahoo.com/quote/AAPL/)"
             )
         elif selected_sector == "2차전지/에너지":
             st.markdown(
-                "- 🔋 **LG에너지솔루션**: [나무위키](https://namu.wiki/w/LG%EC%97%90%EB%84%88%EC%A7%80%EC%86%94%EB%A3%A8%EC%85%98) | [네이버 증권](https://finance.naver.com/item/main.naver?code=373220)"
+                "- **LG에너지솔루션**: [나무위키](https://namu.wiki/w/LG%EC%97%90%EB%84%88%EC%A7%80%EC%86%94%EB%A3%A8%EC%85%98) | [네이버 증권](https://finance.naver.com/item/main.naver?code=373220)"
             )
             st.markdown(
-                "- 🔋 **삼성SDI**: [나무위키](https://namu.wiki/w/%EC%82%BC%EC%84%B1SDI) | [네이버 증권](https://finance.naver.com/item/main.naver?code=006400)"
+                "- **삼성SDI**: [나무위키](https://namu.wiki/w/%EC%82%BC%EC%84%B1SDI) | [네이버 증권](https://finance.naver.com/item/main.naver?code=006400)"
             )
         elif selected_sector == "헬스케어/바이오":
             st.markdown(
-                "- 🧬 **삼성바이오로직스**: [나무위키](https://namu.wiki/w/%EC%82%BC%EC%84%B1%EB%B0%94%EC%9D%B4%EC%98%A4%EB%A1%9C%EC%A7%85%EC%8A%A4) | [네이버 증권](https://finance.naver.com/item/main.naver?code=207940)"
+                "- **삼성바이오로직스**: [나무위키](https://namu.wiki/w/%EC%82%BC%EC%84%B1%EB%B0%94%EC%9D%B4%EC%98%A4%EB%A1%9C%EC%A7%85%EC%8A%A4) | [네이버 증권](https://finance.naver.com/item/main.naver?code=207940)"
             )
         elif selected_sector == "금융/고배당":
             st.markdown(
-                "- 💰 **SCHD ETF**: [SCHD (나무위키)](https://namu.wiki/w/SCHD) | [야후 파이낸스](https://finance.yahoo.com/quote/SCHD/)"
+                "- **SCHD ETF**: [SCHD (나무위키)](https://namu.wiki/w/SCHD) | [야후 파이낸스](https://finance.yahoo.com/quote/SCHD/)"
             )
             st.markdown(
-                "- 🏦 **KB금융**: [나무위키](https://namu.wiki/w/KB%EA%B8%88%EC%9C%B5%EA%B7%B8%EB%A3%B9) | [네이버 증권](https://finance.naver.com/item/main.naver?code=105560)"
+                "- **KB금융**: [나무위키](https://namu.wiki/w/KB%EA%B8%88%EC%9C%B5%EA%B7%B8%EB%A3%B9) | [네이버 증권](https://finance.naver.com/item/main.naver?code=105560)"
             )
 
     # 다시 하기 버튼
