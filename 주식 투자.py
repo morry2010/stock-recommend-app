@@ -111,7 +111,7 @@ else:
 
     df = pd.DataFrame(st.session_state.data)
 
-    # 핵심: 표의 왼쪽 번호(인덱스)를 0, 1, 2가 아니라 1, 2, 3으로 설정합니다!
+    # 표의 왼쪽 번호(인덱스)를 1, 2, 3으로 설정
     df.index = range(1, len(df) + 1)
 
     st.write("### 💡 자산군별 세부 비중 및 최근 1년 수익률")
@@ -138,33 +138,33 @@ else:
     )
     st.plotly_chart(fig_bar, use_container_width=True)
 
-    # 3. 나무위키 바로가기 섹션 (현대자동차 링크 포함)
+    # 3. 나무위키 및 실시간 시세 링크 섹션
     st.write("---")
-    st.write("### 🔗 추천 자산 및 상품 설명 (나무위키 바로가기)")
+    st.write("### 🔗 추천 자산 설명 및 실시간 시세 바로가기")
 
     if "보수형" in st.session_state.user_type:
         st.markdown(
-            "- 🏢 **대형주**: [현대자동차](https://namu.wiki/w/%ED%98%84%EB%8C%80%EC%9E%90%EB%8F%99%EC%B0%A8), [삼성전자](https://namu.wiki/w/%EC%82%BC%EC%84%B1%EC%A0%84%EC%9E%90)"
+            "- 🏢 **현대자동차**: [나무위키](https://namu.wiki/w/%ED%98%84%EB%8C%80%EC%9E%90%EB%8F%99%EC%B0%A8) | [네이버 증권](https://finance.naver.com/item/main.naver?code=005380)"
         )
         st.markdown(
-            "- 🛡️ **채권/국고채**: [국고채](https://namu.wiki/w/%EA%B5%AD%EA%B3%A0%EC%B1%84), [채권](https://namu.wiki/w/%EC%B1%84%EA%B6%8C)"
+            "- 🏢 **삼성전자**: [나무위키](https://namu.wiki/w/%EC%82%BC%EC%84%B1%EC%A0%84%EC%9E%90) | [네이버 증권](https://finance.naver.com/item/main.naver?code=005930)"
         )
         st.markdown(
-            "- 💵 **예금/현금**: [예금](https://namu.wiki/w/%EC%98%88%EA%B8%88)"
+            "- 🛡️ **국고채/채권**: [국고채 (나무위키)](https://namu.wiki/w/%EA%B5%AD%EA%B3%A0%EC%B1%84)"
         )
     elif "중립형" in st.session_state.user_type:
         st.markdown(
-            "- 📈 **주식/ETF**: [S&P 500](https://namu.wiki/w/S%26P%20500), [SCHD](https://namu.wiki/w/SCHD)"
+            "- 📈 **주식/ETF**: [S&P 500 (나무위키)](https://namu.wiki/w/S%26P%20500) | [SCHD (나무위키)](https://namu.wiki/w/SCHD)"
         )
         st.markdown(
-            "- 🛡️ **채권**: [채권](https://namu.wiki/w/%EC%B1%84%EA%B6%8C)"
+            "- 🪙 **금(Gold) 시세**: [금 현물 시세 (네이버 금융)](https://finance.naver.com/marketindex/goldDetail.naver)"
         )
     else:
         st.markdown(
-            "- 🚀 **성장주/테크**: [테슬라](https://namu.wiki/w/%ED%85%8C%EC%8A%AC%EB%9D%BC), [엔비디아](https://namu.wiki/w/%EC%97%94%EB%B9%84%EB%94%94%EC%95%84)"
+            "- 🚀 **성장주/테크**: [테슬라 (나무위키)](https://namu.wiki/w/%ED%85%8C%EC%8A%AC%EB%9D%BC) | [엔비디아 (나무위키)](https://namu.wiki/w/%EC%97%94%EB%B9%84%EB%94%94%EC%95%84)"
         )
         st.markdown(
-            "- 💎 **가상자산**: [비트코인](https://namu.wiki/w/%EB%B9%84%ED%8A%B8%EC%BD%94%EC%9D%B8)"
+            "- 💎 **가상자산**: [비트코인 (나무위키)](https://namu.wiki/w/%EB%B9%84%ED%8A%B8%EC%BD%94%EC%9D%B8)"
         )
 
     # 다시 하기 버튼
