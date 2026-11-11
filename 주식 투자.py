@@ -15,6 +15,7 @@ with st.sidebar:
         "관심 있는 섹터를 선택하세요:",
         [
             "선택 안 함 (기본 보기)",
+            "반도체",
             "테크/빅테크",
             "2차전지/에너지",
             "헬스케어/바이오",
@@ -246,7 +247,23 @@ else:
         st.write("---")
         st.write(f"### 사이드바 선택 섹터: [{selected_sector}]")
 
-        if selected_sector == "테크/빅테크":
+        if selected_sector == "반도체":
+            st.markdown(
+                "- **엔비디아**: [나무위키](https://namu.wiki/w/%EC%97%94%EB%B9%84%EB%94%94%EC%95%84) | [야후 파이낸스](https://finance.yahoo.com/quote/NVDA/)"
+            )
+            st.markdown(
+                "- **삼성전자**: [나무위키](https://namu.wiki/w/%EC%82%BC%EC%84%B1%EC%A0%84%EC%9E%90) | [네이버 증권](https://finance.naver.com/item/main.naver?code=005930)"
+            )
+            st.markdown(
+                "- **SK하이닉스**: [나무위키](https://namu.wiki/w/SK%ED%95%98%EC%9D%B4%EB%8B%89%EC%8A%A4) | [네이버 증권](https://finance.naver.com/item/main.naver?code=000660)"
+            )
+            st.markdown(
+                "- **인텔**: [나무위키](https://namu.wiki/w/%EC%9D%B8%ED%85%94) | [야후 파이낸스](https://finance.yahoo.com/quote/INTC/)"
+            )
+            st.markdown(
+                "- **AMD**: [나무위키](https://namu.wiki/w/AMD(기업)) | [야후 파이낸스](https://finance.yahoo.com/quote/AMD/)"
+            )
+        elif selected_sector == "테크/빅테크":
             st.markdown(
                 "- **엔비디아**: [나무위키](https://namu.wiki/w/%EC%97%94%EB%B9%84%EB%94%94%EC%95%84) | [야후 파이낸스](https://finance.yahoo.com/quote/NVDA/)"
             )
