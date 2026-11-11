@@ -65,7 +65,7 @@ if not st.session_state.submitted:
         else:
             s3 = 3
 
-        # 총 9가지 세부 유형 분기 로직 (특수문자 제거 버전)
+        # 총 9가지 세부 유형 분기 로직
         if s1 == 1:
             if s2 == 1:
                 user_type = "보수형 - 노후 안정 지향형"
@@ -177,13 +177,14 @@ else:
     )
     st.plotly_chart(fig_pie, use_container_width=True)
 
-    # 나무위키 및 실시간 시세 링크 섹션
+    # 3. 9가지 세부 유형별 맞춤 추천 자산 및 실시간 시세 링크 섹션
     st.write("---")
     st.write("### 🔗 추천 자산 설명 및 실시간 시세 바로가기")
 
-    if "보수형" in st.session_state.user_type:
+    # 1) 보수형 - 노후 안정 지향형
+    if st.session_state.user_type == "보수형 - 노후 안정 지향형":
         st.markdown(
-            "- 🏢 **현대자동차**: [나무위키](https://namu.wiki/w/%ED%98%84%EB%8C%80%EC%9E%90%EB%8F%99%EC%B0%A8) | [네이버 증권](https://finance.naver.com/item/main.naver?code=005380)"
+            "- 🛡️ **국고채**: [국고채 (나무위키)](https://namu.wiki/w/%EA%B5%AD%EA%B3%A0%EC%B1%84)"
         )
         st.markdown(
             "- 🏢 **삼성전자**: [나무위키](https://namu.wiki/w/%EC%82%BC%EC%84%B1%EC%A0%84%EC%9E%90) | [네이버 증권](https://finance.naver.com/item/main.naver?code=005930)"
@@ -191,25 +192,71 @@ else:
         st.markdown(
             "- 🪙 **금(Gold)**: [나무위키](https://namu.wiki/w/%EA%B8%88) | [네이버 금시세](https://finance.naver.com/marketindex/goldDetail.naver)"
         )
-    elif "중립형" in st.session_state.user_type:
+
+    # 2) 보수형 - 목돈 마련 안정형
+    elif st.session_state.user_type == "보수형 - 목돈 마련 안정형":
+        st.markdown(
+            "- 📈 **채권형 ETF**: [채권 (나무위키)](https://namu.wiki/w/%EC%B1%84%EA%B6%8C)"
+        )
+        st.markdown(
+            "- 🏢 **현대자동차**: [나무위키](https://namu.wiki/w/%ED%98%84%EB%8C%80%EC%9E%90%EB%8F%99%EC%B0%A8) | [네이버 증권](https://finance.naver.com/item/main.naver?code=005380)"
+        )
+
+    # 3) 보수형 - 단기 자금 파킹형
+    elif st.session_state.user_type == "보수형 - 단기 자금 파킹형":
+        st.markdown(
+            "- 💵 **CMA/MMF**: [CMA (나무위키)](https://namu.wiki/w/CMA) | [MMF (나무위키)](https://namu.wiki/w/MMF)"
+        )
+        st.markdown(
+            "- 🛡️ **단기 국채**: [국고채 (나무위키)](https://namu.wiki/w/%EA%B5%AD%EA%B3%A0%EC%B1%84)"
+        )
+
+    # 4) 중립형 - 은퇴 준비 밸런스형
+    elif st.session_state.user_type == "중립형 - 은퇴 준비 밸런스형":
         st.markdown(
             "- 📈 **S&P 500 ETF**: [나무위키](https://namu.wiki/w/S%26P%20500) | [야후 파이낸스](https://finance.yahoo.com/quote/VOO/)"
         )
         st.markdown(
             "- 🪙 **금(Gold)**: [나무위키](https://namu.wiki/w/%EA%B8%88) | [네이버 금시세](https://finance.naver.com/marketindex/goldDetail.naver)"
         )
-    else:
+
+    # 5) 중립형 - 6:4 표준 성장형
+    elif st.session_state.user_type == "중립형 - 6:4 표준 성장형":
         st.markdown(
-            "- 🚀 **테슬라**: [나무위키](https://namu.wiki/w/%ED%85%8C%EC%8A%AC%EB%9D%BC) | [야후 파이낸스](https://finance.yahoo.com/quote/TSLA/)"
+            "- 📈 **S&P 500 ETF**: [나무위키](https://namu.wiki/w/S%26P%20500) | [야후 파이낸스](https://finance.yahoo.com/quote/VOO/)"
         )
         st.markdown(
+            "- 🏢 **삼성전자**: [나무위키](https://namu.wiki/w/%EC%82%BC%EC%84%B1%EC%A0%84%EC%9E%90) | [네이버 증권](https://finance.naver.com/item/main.naver?code=005930)"
+        )
+
+    # 6) 중립형 - 단기 스윙 밸런스형
+    elif st.session_state.user_type == "중립형 - 단기 스윙 밸런스형":
+        st.markdown(
+            "- 📈 **SCHD ETF**: [SCHD (나무위키)](https://namu.wiki/w/SCHD) | [야후 파이낸스](https://finance.yahoo.com/quote/SCHD/)"
+        )
+        st.markdown(
+            "- 🏢 **현대자동차**: [나무위키](https://namu.wiki/w/%ED%98%84%EB%8C%80%EC%9E%90%EB%8F%99%EC%B0%A8) | [네이버 증권](https://finance.naver.com/item/main.naver?code=005380)"
+        )
+
+    # 7) 공격형 - 장기 기술주 집중형
+    elif st.session_state.user_type == "공격형 - 장기 기술주 집중형":
+        st.markdown(
             "- 🚀 **엔비디아**: [나무위키](https://namu.wiki/w/%EC%97%94%EB%B9%84%EB%94%94%EC%95%84) | [야후 파이낸스](https://finance.yahoo.com/quote/NVDA/)"
+        )
+        st.markdown(
+            "- 🚀 **애플**: [나무위키](https://namu.wiki/w/%EC%95%A0%ED%94%8 - 국장 | [야후 파이낸스](https://finance.yahoo.com/quote/AAPL/)"
+        )
+
+    # 8) 공격형 - 고성장 시드머니형
+    elif st.session_state.user_type == "공격형 - 고성장 시드머니형":
+        st.markdown(
+            "- 🚀 **테슬라**: [나무위키](https://namu.wiki/w/%ED%85%8C%EC%8A%AC%EB%9D%BC) | [야후 파이낸스](https://finance.yahoo.com/quote/TSLA/)"
         )
         st.markdown(
             "- 💎 **비트코인**: [나무위키](https://namu.wiki/w/%EB%B9%84%ED%8A%B8%EC%BD%94%EC%9D%B8) | [야후 파이낸스](https://finance.yahoo.com/quote/BTC-USD/)"
         )
 
-    # 다시 하기 버튼
-    if st.button("🔄 다시 진단하기"):
-        st.session_state.submitted = False
-        st.rerun()
+    # 9) 공격형 - 초고위험 트레이딩형
+    else:
+        st.markdown(
+            "- 💎 **비트코인**: [나무위키](https://namu.wiki/w/%EB%B9%84%ED%8A%B8%EC%BD%94%EC%9D%B8) | [야후 파이낸스](
