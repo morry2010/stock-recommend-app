@@ -138,7 +138,7 @@ else:
     )
     st.plotly_chart(fig_bar, use_container_width=True)
 
-    # 3. 나무위키 및 실시간 시세 링크 섹션
+    # 3. 나무위키 및 실시간 시세 링크 섹션 (해외 주식 시세 링크 포함)
     st.write("---")
     st.write("### 🔗 추천 자산 설명 및 실시간 시세 바로가기")
 
@@ -161,10 +161,13 @@ else:
         )
     else:
         st.markdown(
-            "- 🚀 **성장주/테크**: [테슬라 (나무위키)](https://namu.wiki/w/%ED%85%8C%EC%8A%AC%EB%9D%BC) | [엔비디아 (나무위키)](https://namu.wiki/w/%EC%97%94%EB%B9%84%EB%94%94%EC%95%84)"
+            "- 🚀 **테슬라**: [나무위키](https://namu.wiki/w/%ED%85%8C%EC%8A%AC%EB%9D%BC) | [네이버 증권](https://finance.naver.com/world/sise.naver?symbol=TSLA@US)"
         )
         st.markdown(
-            "- 💎 **가상자산**: [비트코인 (나무위키)](https://namu.wiki/w/%EB%B9%84%ED%8A%B8%EC%BD%94%EC%9D%B8)"
+            "- 🚀 **엔비디아**: [나무위키](https://namu.wiki/w/%EC%97%94%EB%B9%84%EB%94%94%EC%95%84) | [네이버 증권](https://finance.naver.com/world/sise.naver?symbol=NVDA@US)"
+        )
+        st.markdown(
+            "- 💎 **비트코인**: [나무위키](https://namu.wiki/w/%EB%B9%84%ED%8A%B8%EC%BD%94%EC%9D%B8)"
         )
 
     # 다시 하기 버튼
