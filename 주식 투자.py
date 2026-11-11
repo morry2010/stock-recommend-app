@@ -259,4 +259,13 @@ else:
     # 9) 공격형 - 초고위험 트레이딩형
     else:
         st.markdown(
-            "- 💎 **비트코인**: [나무위키](https://namu.wiki/w/%EB%B9%84%ED%8A%B8%EC%BD%94%EC%9D%B8) | [야후 파이낸스](
+            "- 💎 **비트코인**: [나무위키](https://namu.wiki/w/%EB%B9%84%ED%8A%B8%EC%BD%94%EC%9D%B8) | [야후 파이낸스](https://finance.yahoo.com/quote/BTC-USD/)"
+        )
+        st.markdown(
+            "- 🚀 **테슬라**: [나무위키](https://namu.wiki/w/%ED%85%8C%EC%8A%AC%EB%9D%BC) | [야후 파이낸스](https://finance.yahoo.com/quote/TSLA/)"
+        )
+
+    # 다시 하기 버튼
+    if st.button("🔄 다시 진단하기"):
+        st.session_state.submitted = False
+        st.rerun()
