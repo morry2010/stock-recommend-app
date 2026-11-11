@@ -60,20 +60,20 @@ if not st.session_state.submitted:
         else:
             score += 3
 
-        # 성향별 자산 배분 데이터
+        # 성향별 자산 배분 데이터 (금 포함)
         if score <= 4:
             user_type = "보수형 (Conservative)"
             data = {
-                "자산군": ["대형 우량주", "채권/국고채", "예금/현금"],
+                "자산군": ["대형 우량주", "채권/국고채", "금(Gold)/현금"],
                 "비중(%)": [40, 40, 20],
-                "최근 1년 수익률(%)": [12.5, 4.2, 3.5],
+                "최근 1년 수익률(%)": [12.5, 4.2, 18.5],
             }
         elif score <= 7:
             user_type = "중립형 (Balanced - 기본 6:4)"
             data = {
-                "자산군": ["주식 (성장/대형)", "채권", "원자재/현금"],
+                "자산군": ["주식 (성장/대형)", "채권", "금(Gold)/원자재"],
                 "비중(%)": [60, 30, 10],
-                "최근 1년 수익률(%)": [18.2, 4.2, 15.0],
+                "최근 1년 수익률(%)": [18.2, 4.2, 18.5],
             }
         else:
             user_type = "공격형 (Aggressive)"
@@ -138,7 +138,7 @@ else:
     )
     st.plotly_chart(fig_bar, use_container_width=True)
 
-    # 3. 나무위키 및 실시간 시세 링크 섹션 (해외 주식 시세 링크 포함)
+    # 3. 나무위키 및 실시간 시세 링크 섹션 (국내 네이버, 해외 야후, 금 시세 링크 포함)
     st.write("---")
     st.write("### 🔗 추천 자산 설명 및 실시간 시세 바로가기")
 
@@ -150,24 +150,24 @@ else:
             "- 🏢 **삼성전자**: [나무위키](https://namu.wiki/w/%EC%82%BC%EC%84%B1%EC%A0%84%EC%9E%90) | [네이버 증권](https://finance.naver.com/item/main.naver?code=005930)"
         )
         st.markdown(
-            "- 🛡️ **국고채/채권**: [국고채 (나무위키)](https://namu.wiki/w/%EA%B5%AD%EA%B3%A0%EC%B1%84)"
+            "- 🪙 **금(Gold)**: [나무위키](https://namu.wiki/w/%EA%B8%88) | [네이버 금시세](https://finance.naver.com/marketindex/goldDetail.naver)"
         )
     elif "중립형" in st.session_state.user_type:
         st.markdown(
-            "- 📈 **주식/ETF**: [S&P 500 (나무위키)](https://namu.wiki/w/S%26P%20500) | [SCHD (나무위키)](https://namu.wiki/w/SCHD)"
+            "- 📈 **S&P 500 ETF**: [나무위키](https://namu.wiki/w/S%26P%20500) | [야후 파이낸스](https://finance.yahoo.com/quote/VOO/)"
         )
         st.markdown(
-            "- 🪙 **금(Gold) 시세**: [금 현물 시세 (네이버 금융)](https://finance.naver.com/marketindex/goldDetail.naver)"
+            "- 🪙 **금(Gold)**: [나무위키](https://namu.wiki/w/%EA%B8%88) | [네이버 금시세](https://finance.naver.com/marketindex/goldDetail.naver)"
         )
     else:
         st.markdown(
-            "- 🚀 **테슬라**: [나무위키](https://namu.wiki/w/%ED%85%8C%EC%8A%AC%EB%9D%BC) | [네이버 증권](https://finance.naver.com/world/sise.naver?symbol=TSLA@US)"
+            "- 🚀 **테슬라**: [나무위키](https://namu.wiki/w/%ED%85%8C%EC%8A%AC%EB%9D%BC) | [야후 파이낸스](https://finance.yahoo.com/quote/TSLA/)"
         )
         st.markdown(
-            "- 🚀 **엔비디아**: [나무위키](https://namu.wiki/w/%EC%97%94%EB%B9%84%EB%94%94%EC%95%84) | [네이버 증권](https://finance.naver.com/world/sise.naver?symbol=NVDA@US)"
+            "- 🚀 **엔비디아**: [나무위키](https://namu.wiki/w/%EC%97%94%EB%B9%84%EB%94%94%EC%95%84) | [야후 파이낸스](https://finance.yahoo.com/quote/NVDA/)"
         )
         st.markdown(
-            "- 💎 **비트코인**: [나무위키](https://namu.wiki/w/%EB%B9%84%ED%8A%B8%EC%BD%94%EC%9D%B8)"
+            "- 💎 **비트코인**: [나무위키](https://namu.wiki/w/%EB%B9%84%ED%8A%B8%EC%BD%94%EC%9D%B8) | [야후 파이낸스](https://finance.yahoo.com/quote/BTC-USD/)"
         )
 
     # 다시 하기 버튼
