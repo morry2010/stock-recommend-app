@@ -1,8 +1,37 @@
 import pandas as pd
 import plotly.express as px
 import streamlit as st
+import yfinance as yf
 
 st.title("📈 맞춤형 투자 성향 진단 및 자산 배분")
+
+
+# --- [야후 파이낸스 데이터 연동 함수] ---
+@st.cache_data(ttl=3600)  # 데이터 로딩 속도 최적화를 위한 캐싱
+def get_asset_data(ticker_symbol, period="1y", fallback_return=5.0):
+    try:
+        ticker = yf.Ticker(ticker_symbol)
+        hist = ticker.history(period=period)
+
+        # 기간별 수익률 계산
+        ret = fallback_return
+        if not hist.empty:
+            start = hist["Close"].iloc[0]
+            latest = hist["Close"].iloc[-1]
+            ret = round(((latest - start) / start) * 100, 2)
+
+        # 배당수익률 가져오기 (info에서 추출, 없으면 0)
+        info = ticker.info
+        div_yield = info.get("dividendYield", 0)
+        if div_yield is not None:
+            div_yield = round(div_yield * 100, 2)
+        else:
+            div_yield = 0.0
+
+        return ret, div_yield
+    except Exception:
+        return fallback_return, 0.0
+
 
 # --- [사이드바 영역] ---
 with st.sidebar:
@@ -90,82 +119,211 @@ if not st.session_state.submitted:
         else:
             s3 = 3
 
-        # 총 9가지 세부 유형 분기 로직
+        # 총 9가지 세부 유형별 자산 구성 및 대표 ETF 티커 매핑
         if s1 == 1:
             if s2 == 1:
                 user_type = "보수형 - 노후 안정 지향형"
-                data = {
-                    "자산군": ["국고채/안전채권", "대형 우량주", "금(Gold)/현금"],
-                    "비중(%)": [50, 30, 20],
-                    "최근 1년 수익률(%)": [4.2, 12.5, 18.5],
-                }
+                assets = [
+                    {
+                        "name": "국고채/안전채권",
+                        "weight": 50,
+                        "ticker": "IEF",
+                        "fallback": 4.2,
+                    },
+                    {
+                        "name": "대형 우량주",
+                        "weight": 30,
+                        "ticker": "VOO",
+                        "fallback": 12.5,
+                    },
+                    {
+                        "name": "금(Gold)/현금",
+                        "weight": 20,
+                        "ticker": "IAU",
+                        "fallback": 18.5,
+                    },
+                ]
             elif s2 == 2:
                 user_type = "보수형 - 목돈 마련 안정형"
-                data = {
-                    "자산군": ["채권형 ETF", "배당주 펀드", "단기 예적금"],
-                    "비중(%)": [40, 40, 20],
-                    "최근 1년 수익률(%)": [5.0, 10.0, 3.5],
-                }
+                assets = [
+                    {
+                        "name": "채권형 ETF",
+                        "weight": 40,
+                        "ticker": "AGG",
+                        "fallback": 5.0,
+                    },
+                    {
+                        "name": "배당주 펀드",
+                        "weight": 40,
+                        "ticker": "SCHD",
+                        "fallback": 10.0,
+                    },
+                    {
+                        "name": "단기 예적금",
+                        "weight": 20,
+                        "ticker": "SHV",
+                        "fallback": 3.5,
+                    },
+                ]
             else:
                 user_type = "보수형 - 단기 자금 파킹형"
-                data = {
-                    "자산군": ["CMA/MMF (현금)", "단기 국채", "우량 회사채"],
-                    "비중(%)": [60, 20, 20],
-                    "최근 1년 수익률(%)": [3.6, 4.0, 5.2],
-                }
+                assets = [
+                    {
+                        "name": "CMA/MMF (현금)",
+                        "weight": 60,
+                        "ticker": "BIL",
+                        "fallback": 3.6,
+                    },
+                    {
+                        "name": "단기 국채",
+                        "weight": 20,
+                        "ticker": "SHY",
+                        "fallback": 4.0,
+                    },
+                    {
+                        "name": "우량 회사채",
+                        "weight": 20,
+                        "ticker": "LQD",
+                        "fallback": 5.2,
+                    },
+                ]
         elif s1 == 2:
             if s2 == 1:
                 user_type = "중립형 - 은퇴 준비 밸런스형"
-                data = {
-                    "자산군": ["S&P 500 ETF", "종합 채권", "금(Gold)"],
-                    "비중(%)": [50, 40, 10],
-                    "최근 1년 수익률(%)": [18.2, 4.2, 18.5],
-                }
+                assets = [
+                    {
+                        "name": "S&P 500 ETF",
+                        "weight": 50,
+                        "ticker": "VOO",
+                        "fallback": 18.2,
+                    },
+                    {
+                        "name": "종합 채권",
+                        "weight": 40,
+                        "ticker": "AGG",
+                        "fallback": 4.2,
+                    },
+                    {
+                        "name": "금(Gold)",
+                        "weight": 10,
+                        "ticker": "IAU",
+                        "fallback": 18.5,
+                    },
+                ]
             elif s2 == 2:
                 user_type = "중립형 - 6:4 표준 성장형"
-                data = {
-                    "자산군": ["주식 (성장/대형)", "채권", "원자재/현금"],
-                    "비중(%)": [60, 30, 10],
-                    "최근 1년 수익률(%)": [18.2, 4.2, 15.0],
-                }
+                assets = [
+                    {
+                        "name": "주식 (성장/대형)",
+                        "weight": 60,
+                        "ticker": "VOO",
+                        "fallback": 18.2,
+                    },
+                    {
+                        "name": "채권",
+                        "weight": 30,
+                        "ticker": "AGG",
+                        "fallback": 4.2,
+                    },
+                    {
+                        "name": "원자재/현금",
+                        "weight": 10,
+                        "ticker": "GSG",
+                        "fallback": 15.0,
+                    },
+                ]
             else:
                 user_type = "중립형 - 단기 스윙 밸런스형"
-                data = {
-                    "자산군": ["섹터별 주도주", "채권", "현금성 자산"],
-                    "비중(%)": [50, 20, 30],
-                    "최근 1년 수익률(%)": [20.0, 4.2, 3.5],
-                }
+                assets = [
+                    {
+                        "name": "섹터별 주도주",
+                        "weight": 50,
+                        "ticker": "XLK",
+                        "fallback": 20.0,
+                    },
+                    {
+                        "name": "채권",
+                        "weight": 20,
+                        "ticker": "AGG",
+                        "fallback": 4.2,
+                    },
+                    {
+                        "name": "현금성 자산",
+                        "weight": 30,
+                        "ticker": "BIL",
+                        "fallback": 3.5,
+                    },
+                ]
         else:
             if s2 == 1:
                 user_type = "공격형 - 장기 기술주 집중형"
-                data = {
-                    "자산군": ["글로벌 빅테크/AI", "혁신 성장 ETF", "채권"],
-                    "비중(%)": [80, 15, 5],
-                    "최근 1년 수익률(%)": [30.0, 25.0, 4.2],
-                }
+                assets = [
+                    {
+                        "name": "글로벌 빅테크/AI",
+                        "weight": 80,
+                        "ticker": "QQQ",
+                        "fallback": 30.0,
+                    },
+                    {
+                        "name": "혁신 성장 ETF",
+                        "weight": 15,
+                        "ticker": "ARKK",
+                        "fallback": 25.0,
+                    },
+                    {
+                        "name": "채권",
+                        "weight": 5,
+                        "ticker": "AGG",
+                        "fallback": 4.2,
+                    },
+                ]
             elif s2 == 2:
                 user_type = "공격형 - 고성장 시드머니형"
-                data = {
-                    "자산군": ["미국 성장주", "가상자산/원자재", "채권"],
-                    "비중(%)": [75, 20, 5],
-                    "최근 1년 수익률(%)": [28.5, 35.0, 4.2],
-                }
+                assets = [
+                    {
+                        "name": "미국 성장주",
+                        "weight": 75,
+                        "ticker": "QQQ",
+                        "fallback": 28.5,
+                    },
+                    {
+                        "name": "가상자산/원자재",
+                        "weight": 20,
+                        "ticker": "IAU",
+                        "fallback": 35.0,
+                    },
+                    {
+                        "name": "채권",
+                        "weight": 5,
+                        "ticker": "AGG",
+                        "fallback": 4.2,
+                    },
+                ]
             else:
                 user_type = "공격형 - 초고위험 트레이딩형"
-                data = {
-                    "자산군": ["가상자산(코인)", "테마형 고변동성 주식", "현금"],
-                    "비중(%)": [70, 20, 10],
-                    "최근 1년 수익률(%)": [45.0, 30.0, 3.5],
-                }
+                assets = [
+                    {
+                        "name": "가상자산 연계",
+                        "weight": 70,
+                        "ticker": "BITO",
+                        "fallback": 45.0,
+                    },
+                    {
+                        "name": "테마형 고변동성 주식",
+                        "weight": 20,
+                        "ticker": "TQQQ",
+                        "fallback": 30.0,
+                    },
+                    {
+                        "name": "현금",
+                        "weight": 10,
+                        "ticker": "BIL",
+                        "fallback": 3.5,
+                    },
+                ]
 
-        weights = [w / 100 for w in data["비중(%)"]]
-        returns = data["최근 1년 수익률(%)"]
-        portfolio_return = sum(w * r for w, r in zip(weights, returns))
-
-        st.session_state.score = s1 + s2 + s3
         st.session_state.user_type = user_type
-        st.session_state.data = data
-        st.session_state.portfolio_return = round(portfolio_return, 2)
+        st.session_state.assets = assets
         st.session_state.submitted = True
         st.rerun()
 
@@ -176,17 +334,56 @@ else:
         f"📊 맞춤 진단 결과 ➔ **{st.session_state.user_type}**"
     )
 
-    st.metric(
-        label="🔥 이 포트폴리오의 최근 1년 환산 종합 수익률",
-        value=f"+{st.session_state.portfolio_return}%",
+    # 기간 선택 셀렉트박스 추가 (1년, 3년, 5년)
+    col1, col2 = st.columns([2, 1])
+    with col2:
+        period_label = st.selectbox(
+            "수익률 기간 선택", ["최근 1년", "최근 3년", "최근 5년"]
+        )
+
+    # 기간 매핑
+    period_map = {"최근 1년": "1y", "최근 3년": "3y", "최근 5년": "5y"}
+    selected_period = period_map[period_label]
+
+    # 세션에 저장된 자산 목록을 기반으로 동적 데이터 생성
+    assets = st.session_state.assets
+    names = [item["name"] for item in assets]
+    weights = [item["weight"] for item in assets]
+
+    # 선택된 기간에 맞춰 수익률 및 배당수익률 불러오기
+    returns = []
+    div_yields = []
+    for item in assets:
+        ret, div = get_asset_data(
+            item["ticker"], period=selected_period, fallback_return=item["fallback"]
+        )
+        returns.append(ret)
+        div_yields.append(div)
+
+    # 종합 포트폴리오 가중 평균 수익률 계산
+    portfolio_return = sum(
+        (w / 100) * r for w, r in zip(weights, returns)
     )
 
-    df = pd.DataFrame(st.session_state.data)
+    st.metric(
+        label=f"🔥 이 포트폴리오의 [{period_label}] 환산 종합 수익률",
+        value=f"+{round(portfolio_return, 2)}%",
+    )
+
+    # 데이터프레임 구성 (자산군, 비중, 선택기간 수익률, 배당수익률)
+    df_data = {
+        "자산군": names,
+        "비중(%)": weights,
+        f"{period_label} 수익률(%)": returns,
+        "배당수익률(%)": div_yields,
+    }
+    df = pd.DataFrame(df_data)
     df.index = range(1, len(df) + 1)
 
-    st.write("### 💡 자산군별 세부 비중 및 최근 1년 수익률")
+    st.write(f"### 💡 자산군별 세부 비중 및 {period_label} 성과 / 배당")
     st.dataframe(df, use_container_width=True)
 
+    # 도넛 차트 (자산 배분 비중)
     fig_pie = px.pie(
         df,
         values="비중(%)",
