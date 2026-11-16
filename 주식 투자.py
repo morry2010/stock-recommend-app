@@ -38,8 +38,8 @@ st.markdown(
 
 st.title("맞춤형 투자 성향 진단 및 미래 성장 테마 대시보드 (Pro)")
 st.caption(
-    "설문을 통해 나의 투자 성향을 진단하고, 멀티탭과 백테스팅이 강화된 최적"
-    " 포트폴리오를 탐색하세요."
+    "설문을 통해 나의 투자 성향을 진단하고, 배당수익률 및 로그 스케일 백테스팅이"
+    " 강화된 최적 포트폴리오를 탐색하세요."
 )
 
 
@@ -53,6 +53,30 @@ def get_portfolio_data(tickers, period="1y"):
     return data
   except Exception:
     return pd.DataFrame()
+
+
+# --- [배당수익률 조회 함수] ---
+@st.cache_data(ttl=3600)
+def get_dividend_yields(tickers):
+  div_dict = {}
+  for t in tickers:
+    try:
+      ticker_obj = yf.Ticker(t)
+      info = ticker_obj.info
+      div = info.get("dividendYield", 0)
+      if div is not None:
+        if div > 1:
+          div = round(div, 2)
+        else:
+          div = round(div * 100, 2)
+        if div > 20.0:
+          div = 15.0  # 비정상 수치 필터링
+      else:
+        div = 0.0
+      div_dict[t] = div
+    except Exception:
+      div_dict[t] = 0.0
+  return div_dict
 
 
 # --- [9가지 투자 성향 데이터베이스] ---
@@ -456,8 +480,10 @@ else:
   weights = [item["weight"] for item in assets]
 
   price_df = get_portfolio_data(tickers, period=selected_period)
+  div_dict = get_dividend_yields(tickers)
 
   returns = []
+  div_yields = []
   for item in assets:
     t = item["ticker"]
     fallback = item["fallback"]
@@ -466,15 +492,9 @@ else:
         s_series = price_df[t].dropna()
         start, latest = s_series.iloc[0], s_series.iloc[-1]
         if selected_period == "3y" and start > 0:
-          ret = round(
-              (pow(latest / start, 1 / 3) - 1) * 100,
-              2,
-          )
+          ret = round((pow(latest / start, 1 / 3) - 1) * 100, 2)
         elif selected_period == "5y" and start > 0:
-          ret = round(
-              (pow(latest / start, 1 / 5) - 1) * 100,
-              2,
-          )
+          ret = round((pow(latest / start, 1 / 5) - 1) * 100, 2)
         else:
           ret = round(((latest - start) / start) * 100, 2)
       else:
@@ -482,6 +502,7 @@ else:
     except Exception:
       ret = fallback
     returns.append(ret)
+    div_yields.append(div_dict.get(t, 0.0))
 
   portfolio_return = sum((w / 100) * r for w, r in zip(weights, returns))
 
@@ -499,8 +520,8 @@ else:
   # --- [멀티탭 구조 도입] ---
   tab1, tab2, tab3 = st.tabs(
       [
-          "📊 자산 배분 및 구성 비중",
-          "📈 포트폴리오 백테스팅 (수익률 추이)",
+          "📊 자산 배분 및 배당수익률",
+          "📈 포트폴리오 백테스팅 (기준가 100 & 로그 스케일)",
           "🎯 맞춤 추천 자산 링크",
       ]
   )
@@ -512,12 +533,13 @@ else:
         "대표 ETF 상품 (티커)": tickers,
         "비중(%)": weights,
         f"{period_label} 성과(%)": returns,
+        "현재 배당수익률(%)": div_yields,
     }
     df = pd.DataFrame(df_data)
     df.index = range(1, len(df) + 1)
 
     with col_t1:
-      st.write(f"### 자산군별 비중 및 {period_label} 성과")
+      st.write(f"### 자산군별 비중, 성과 및 배당수익률")
       st.dataframe(df, use_container_width=True)
 
     with col_t2:
@@ -537,16 +559,51 @@ else:
       st.plotly_chart(fig_pie, use_container_width=True)
 
   with tab2:
-    st.write(f"### 📉 포트폴리오 누적 수익률 추이 ({period_label})")
+    st.write(
+        f"### 📉 포트폴리오 누적 수익률 추이 ({period_label} / 시작가 100)"
+    )
+    st.caption(
+        "💡 **로그 스케일(Log Scale)**이 적용되어 있어 100 기준 위쪽(수익) 구간은"
+        " 넓게, 아래쪽(손실) 구간은 좁게 표현되어 성과 변동을 명확하게"
+        " 확인할 수 있습니다."
+    )
     try:
       if not price_df.empty:
         norm_df = price_df.dropna()
         if not norm_df.empty:
-          norm_df = norm_df / norm_df.iloc[0]
+          # 시작점을 100으로 설정
+          norm_df = (norm_df / norm_df.iloc[0]) * 100
           portfolio_series = sum(
               norm_df[t] * (w / 100) for t, w in zip(tickers, weights) if t in norm_df
           )
-          st.line_chart(portfolio_series)
+
+          # Plotly를 이용한 커스텀 로그 스케일 차트 생성
+          fig_bt = go.Figure()
+          fig_bt.add_trace(
+              go.Scatter(
+                  x=portfolio_series.index,
+                  y=portfolio_series.values,
+                  mode="lines",
+                  name="포트폴리오 가치",
+                  line=dict(color="#1a73e8", width=2.5),
+                  fill="tozeroy",
+                  fillcolor="rgba(26, 115, 232, 0.05)",
+              )
+          )
+          # 기준선 100 표시
+          fig_bt.add_hline(
+              y=100, line_dash="dash", line_color="gray", annotation_text="시작점 (100)"
+          )
+
+          fig_bt.update_layout(
+              xaxis_title="기간",
+              yaxis_title="포트폴리오 기준가 (Log Scale)",
+              yaxis_type="log",  # 로그 스케일 적용 (100 위쪽 확대, 아래쪽 압축)
+              margin=dict(t=20, b=20, l=20, r=20),
+              height=420,
+              hovermode="x unified",
+          )
+          st.plotly_chart(fig_bt, use_container_width=True)
         else:
           st.info(
               "선택한 기간의 시계열 차트 데이터를 계산할 수 없습니다 (Fallback"
