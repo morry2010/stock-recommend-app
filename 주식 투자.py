@@ -6,7 +6,7 @@ import yfinance as yf
 st.title("맞춤형 투자 성향 진단 및 자산 배분")
 
 
-# --- [야후 파이낸스 데이터 연동 함수 (배당 오류 수정 반영)] ---
+# --- [야후 파이낸스 데이터 연동 함수 (배당률 버그 및 상한선 보정 적용)] ---
 @st.cache_data(ttl=3600)
 def get_asset_data(ticker_symbol, period="1y", fallback_return=5.0):
     try:
@@ -20,7 +20,7 @@ def get_asset_data(ticker_symbol, period="1y", fallback_return=5.0):
             latest = hist["Close"].iloc[-1]
             ret = round(((latest - start) / start) * 100, 2)
 
-        # 배당수익률 가져오기 (단위 버그 방지 처리)
+        # 배당수익률 가져오기 (단위 버그 방지 및 비정상적 고배당 상한선 처리)
         info = ticker.info
         div_yield = info.get("dividendYield", 0)
         if div_yield is not None:
@@ -28,6 +28,10 @@ def get_asset_data(ticker_symbol, period="1y", fallback_return=5.0):
                 div_yield = round(div_yield, 2)
             else:
                 div_yield = round(div_yield * 100, 2)
+            
+            # 선물/특수 ETF 등으로 배당률이 과도하게 튀는 경우(예: 20% 초과) 상한선 적용
+            if div_yield > 20.0:
+                div_yield = 15.0
         else:
             div_yield = 0.0
 
