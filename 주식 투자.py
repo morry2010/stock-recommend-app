@@ -3,14 +3,14 @@ import plotly.express as px
 import streamlit as st
 import yfinance as yf
 
-# 페이지 설정 (와이드 모드 적용으로 넓고 시원한 레이아웃 구성)
+# 페이지 설정 (와이드 모드 적용)
 st.set_page_config(
-    page_title="맞춤형 투자 성향 진단 및 자산 배분",
+    page_title="맞춤형 투자 성향 진단 및 테마별 자산 배분",
     page_icon="📈",
     layout="wide",
 )
 
-# --- [커스텀 CSS 디자인 (깔끔한 핀테크 대시보드 스타일)] ---
+# --- [커스텀 CSS 디자인] ---
 st.markdown(
     """
     <style>
@@ -20,15 +20,24 @@ st.markdown(
     h1, h2, h3 {
         color: #1f2937;
     }
+    .card {
+        background-color: #ffffff;
+        padding: 16px;
+        border-radius: 8px;
+        border: 1px solid #e0e0e0;
+        text-align: center;
+        margin-bottom: 15px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+    }
     </style>
     """,
     unsafe_allow_html=True,
 )
 
-st.title("맞춤형 투자 성향 진단 및 자산 배분 대시보드")
+st.title("맞춤형 투자 성향 진단 및 미래 성장 테마 대시보드")
 st.caption(
-    "설문을 통해 나의 투자 성향을 진단하고, 실시간 글로벌 ETF 데이터 기반의 최적"
-    " 포트폴리오를 확인하세요."
+    "설문을 통해 나의 투자 성향을 진단하고, 글로벌 ETF 데이터 기반의 최적"
+    " 포트폴리오와 핵심 성장 테마를 탐색하세요."
 )
 
 
@@ -84,7 +93,7 @@ def get_asset_data(ticker_symbol, period="1y", fallback_return=5.0):
     return fallback_return, 0.0
 
 
-# --- [9가지 전체 유형 데이터베이스 정의] ---
+# --- [9가지 투자 성향 데이터베이스] ---
 TYPE_DATABASE = {
     "보수형 - 노후 안정 지향형": [
         {
@@ -269,27 +278,104 @@ TYPE_DATABASE = {
 }
 
 
+# --- [10가지 미래 성장 테마 및 종목 데이터베이스] ---
+THEME_DATABASE = {
+    "AI 반도체 및 인프라": [
+        ("엔비디아", "NVDA", "yahoo"),
+        ("브로드컴", "AVGO", "yahoo"),
+        ("마이크론", "MU", "yahoo"),
+        ("삼성전자", "005930", "naver"),
+        ("SK하이닉스", "000660", "naver"),
+        ("한미반도체", "042700", "naver"),
+    ],
+    "빅테크 및 클라우드 소프트웨어": [
+        ("마이크로소프트", "MSFT", "yahoo"),
+        ("알파벳", "GOOGL", "yahoo"),
+        ("아마존", "AMZN", "yahoo"),
+        ("메타", "META", "yahoo"),
+        ("애플", "AAPL", "yahoo"),
+        ("NAVER", "035420", "naver"),
+    ],
+    "전력 인프라 및 원자력": [
+        ("이튼", "ETN", "yahoo"),
+        ("GE버노바", "GEV", "yahoo"),
+        ("콘스텔레이션 에너지", "CEG", "yahoo"),
+        ("HD현대일렉트릭", "267260", "naver"),
+        ("효성중공업", "298040", "naver"),
+        ("두산에너빌리티", "034020", "naver"),
+    ],
+    "방위산업": [
+        ("록히드 마틴", "LMT", "yahoo"),
+        ("RTX 코퍼레이션", "RTX", "yahoo"),
+        ("팔란티어", "PLTR", "yahoo"),
+        ("한화에어로스페이스", "012450", "naver"),
+        ("현대로템", "064350", "naver"),
+        ("LIG넥스원", "079550", "naver"),
+    ],
+    "조선 및 해양 인프라": [
+        ("헌팅턴잉걸스 인더스트리스", "HII", "yahoo"),
+        ("HD한국조선해양", "009540", "naver"),
+        ("삼성중공업", "010140", "naver"),
+        ("HD현대중공업", "329180", "naver"),
+        ("한화오션", "042660", "naver"),
+        ("HJ중공업", "097230", "naver"),
+    ],
+    "우주항공 및 양자 테크": [
+        ("로켓랩", "RKLB", "yahoo"),
+        ("아이온큐", "IONQ", "yahoo"),
+        ("리게티 컴퓨팅", "RGTI", "yahoo"),
+        ("디웨이브 퀀텀", "QBTS", "yahoo"),
+        ("켄코아에어로스페이스", "274580", "naver"),
+        ("이노스페이스", "462350", "naver"),
+    ],
+    "2차전지 및 에너지저장장치(ESS)": [
+        ("테슬라", "TSLA", "yahoo"),
+        ("앨버마일", "ALB", "yahoo"),
+        ("퀀텀스케이프", "QS", "yahoo"),
+        ("LG에너지솔루션", "373220", "naver"),
+        ("삼성SDI", "006400", "naver"),
+        ("POSCO홀딩스", "005490", "naver"),
+    ],
+    "바이오 및 헬스케어": [
+        ("일라이 릴리", "LLY", "yahoo"),
+        ("노보 노디스크", "NVO", "yahoo"),
+        ("머크", "MRK", "yahoo"),
+        ("삼성바이오로직스", "207940", "naver"),
+        ("셀트리온", "068270", "naver"),
+        ("알테오젠", "196170", "naver"),
+    ],
+    "에너지 서비스 및 전통 자원": [
+        ("엑슨모빌", "XOM", "yahoo"),
+        ("셰브론", "CVX", "yahoo"),
+        ("슐룸베르거", "SLB", "yahoo"),
+        ("S-Oil", "010950", "naver"),
+        ("SK이노베이션", "096770", "naver"),
+        ("포스코인터내셔널", "047050", "naver"),
+    ],
+    "핀테크, 보안 및 가상자산 인프라": [
+        ("코인베이스", "COIN", "yahoo"),
+        ("블록", "SQ", "yahoo"),
+        ("마이크로스트래티지", "MSTR", "yahoo"),
+        ("로빈후드", "HOOD", "yahoo"),
+        ("카카오페이", "377300", "naver"),
+        ("NHN한국사이버결제", "060250", "naver"),
+    ],
+}
+
+
 # --- [사이드바 영역] ---
 with st.sidebar:
-  st.header("메뉴 및 설정")
+  st.header("🔍 미래 성장 테마 탐색")
   st.divider()
 
-  st.subheader("섹터별 주요 종목 탐색")
-  selected_sector = st.selectbox(
-      "관심 있는 섹터를 선택하세요:",
-      [
-          "선택 안 함 (기본 보기)",
-          "반도체",
-          "테크/빅테크",
-          "2차전지/에너지",
-          "헬스케어/바이오",
-          "금융/고배당",
-      ],
+  selected_theme = st.selectbox(
+      "관심 있는 테마를 선택하세요:",
+      ["선택 안 함 (기본 보기)"] + list(THEME_DATABASE.keys()),
   )
   st.divider()
   st.info(
-      "💡 사이드바에서 섹터를 선택하면 화면 하단에 해당 종목과 바로가기 링크가"
-      " 표시됩니다."
+      "💡 사이드바에서 테마를 선택하시면 하단에 해당 글로벌 및 국내 대표 종목들의"
+      " 실시간 링크 카드가 표시됩니다."
   )
 
 
@@ -486,7 +572,7 @@ else:
     with cols[idx]:
       st.markdown(
           f"""
-            <div style="background-color: #ffffff; padding: 16px; border-radius: 8px; border: 1px solid #e0e0e0; height: 100%;">
+            <div class="card">
                 <b>{item['name']}</b><br>
                 <span style="color: #666; font-size: 13px;">티커: {item['ticker']} ({item['weight']}%)</span><br><br>
                 <a href="https://finance.yahoo.com/quote/{item['ticker']}/" target="_blank" style="text-decoration: none; color: #1a73e8; font-weight: bold; font-size: 14px;">🔗 야후 파이낸스 보기</a>
@@ -495,66 +581,44 @@ else:
           unsafe_allow_html=True,
       )
 
-  # --- [사이드바 섹터 선택 종목 카드 섹션] ---
-  if selected_sector != "선택 안 함 (기본 보기)":
-    st.markdown("---")
-    st.markdown(f"### 🔍 사이드바 선택 섹터: [{selected_sector}]")
-
-    if selected_sector == "반도체":
-      sector_items = [
-          ("엔비디아", "NVDA", "야후 파이낸스"),
-          ("삼성전자", "005930", "네이버 증권"),
-          ("SK하이닉스", "000660", "네이버 증권"),
-          ("인텔", "INTC", "야후 파이낸스"),
-          ("AMD", "AMD", "야후 파이낸스"),
-      ]
-    elif selected_sector == "테크/빅테크":
-      sector_items = [
-          ("엔비디아", "NVDA", "야후 파이낸스"),
-          ("테슬라", "TSLA", "야후 파이낸스"),
-          ("애플", "AAPL", "야후 파이낸스"),
-      ]
-    elif selected_sector == "2차전지/에너지":
-      sector_items = [
-          ("LG에너지솔루션", "373220", "네이버 증권"),
-          ("삼성SDI", "006400", "네이버 증권"),
-      ]
-    elif selected_sector == "헬스케어/바이오":
-      sector_items = [("삼성바이오로직스", "207940", "네이버 증권")]
-    elif selected_sector == "금융/고배당":
-      sector_items = [
-          ("SCHD ETF", "SCHD", "야후 파이낸스"),
-          ("KB금융", "105560", "네이버 증권"),
-      ]
-    else:
-      sector_items = []
-
-    s_cols = st.columns(len(sector_items) if sector_items else 1)
-    for idx, (s_name, s_code, s_type) in enumerate(sector_items):
-      if s_type == "야후 파이낸스":
-        link = f"https://finance.yahoo.com/quote/{s_code}/"
-      else:
-        link = f"https://finance.naver.com/item/main.naver?code={s_code}"
-
-      with s_cols[idx]:
-        st.markdown(
-            f"""
-                <div style="background-color: #ffffff; padding: 14px; border-radius: 8px; border: 1px solid #e0e0e0; text-align: center;">
-                    <b>{s_name}</b><br>
-                    <a href="{link}" target="_blank" style="text-decoration: none; color: #1a73e8; font-size: 13px;">🔗 {s_type} 링크</a>
-                </div>
-                """,
-            unsafe_allow_html=True,
-        )
-
-  # 다시 하기 버튼
+# --- [사이드바 선택 테마별 종목 탐색 카드 섹션] ---
+if selected_theme != "선택 안 함 (기본 보기)":
   st.markdown("---")
-  col_btn1, col_btn2, col_btn3 = st.columns([1, 2, 1])
-  with col_btn2:
-    if st.button(
-        "🔄 처음부터 설문 다시 진단하기",
-        type="secondary",
-        use_container_width=True,
-    ):
-      st.session_state.submitted = False
-      st.rerun()
+  st.markdown(f"### 🚀 미래 성장 테마 탐색: [{selected_theme}]")
+  st.write(
+      "선택하신 핵심 테마의 글로벌 및 국내 대표 종목들의 실시간 시세 및 정보를"
+      " 확인하세요."
+  )
+
+  theme_stocks = THEME_DATABASE[selected_theme]
+  t_cols = st.columns(3)  # 3열 그리드 배치
+
+  for idx, (s_name, s_code, s_type) in enumerate(theme_stocks):
+    if s_type == "yahoo":
+      link = f"https://finance.yahoo.com/quote/{s_code}/"
+      link_label = "야후 파이낸스"
+    else:
+      link = f"https://finance.naver.com/item/main.naver?code={s_code}"
+      link_label = "네이버 증권"
+
+    with t_cols[idx % 3]:
+      st.markdown(
+          f"""
+            <div class="card">
+                <b style="font-size: 16px; color: #1f2937;">{s_name}</b><br>
+                <span style="color: #666; font-size: 13px;">코드/티커: {s_code}</span><br><br>
+                <a href="{link}" target="_blank" style="text-decoration: none; color: #1a73e8; font-weight: bold; font-size: 14px;">🔗 {link_label} 바로가기</a>
+            </div>
+            """,
+          unsafe_allow_html=True,
+      )
+
+# 다시 하기 버튼
+st.markdown("---")
+col_btn1, col_btn2, col_btn3 = st.columns([1, 2, 1])
+with col_btn2:
+  if st.button(
+      "🔄 처음부터 설문 다시 진단하기", type="secondary", use_container_width=True
+  ):
+    st.session_state.submitted = False
+    st.rerun()
