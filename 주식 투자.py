@@ -1,5 +1,7 @@
+import numpy as np
 import pandas as pd
 import plotly.express as px
+import plotly.graph_objects as go
 import streamlit as st
 import yfinance as yf
 
@@ -34,63 +36,23 @@ st.markdown(
     unsafe_allow_html=True,
 )
 
-st.title("맞춤형 투자 성향 진단 및 미래 성장 테마 대시보드")
+st.title("맞춤형 투자 성향 진단 및 미래 성장 테마 대시보드 (Pro)")
 st.caption(
-    "설문을 통해 나의 투자 성향을 진단하고, 글로벌 ETF 데이터 기반의 최적"
-    " 포트폴리오와 핵심 성장 테마를 탐색하세요."
+    "설문을 통해 나의 투자 성향을 진단하고, 멀티탭과 백테스팅이 강화된 최적"
+    " 포트폴리오를 탐색하세요."
 )
 
 
-# --- [야후 파이낸스 데이터 연동 함수] ---
+# --- [야후 파이낸스 데이터 일괄 연동 및 최적화 함수] ---
 @st.cache_data(ttl=3600)
-def get_asset_data(ticker_symbol, period="1y", fallback_return=5.0):
+def get_portfolio_data(tickers, period="1y"):
   try:
-    ticker = yf.Ticker(ticker_symbol)
-    hist = ticker.history(period=period)
-
-    ret = fallback_return
-    if not hist.empty:
-      start = hist["Close"].iloc[0]
-      latest = hist["Close"].iloc[-1]
-      if period == "3y":
-        ret = round(
-            (
-                (pow(latest / start, 1 / 3) - 1)
-                if start > 0
-                else fallback_return
-            )
-            * 100,
-            2,
-        )
-      elif period == "5y":
-        ret = round(
-            (
-                (pow(latest / start, 1 / 5) - 1)
-                if start > 0
-                else fallback_return
-            )
-            * 100,
-            2,
-        )
-      else:
-        ret = round(((latest - start) / start) * 100, 2)
-
-    info = ticker.info
-    div_yield = info.get("dividendYield", 0)
-    if div_yield is not None:
-      if div_yield > 1:
-        div_yield = round(div_yield, 2)
-      else:
-        div_yield = round(div_yield * 100, 2)
-
-      if div_yield > 20.0:
-        div_yield = 15.0
-    else:
-      div_yield = 0.0
-
-    return ret, div_yield
+    data = yf.download(tickers, period=period, progress=False)["Close"]
+    if isinstance(data, pd.Series):
+      data = data.to_frame()
+    return data
   except Exception:
-    return fallback_return, 0.0
+    return pd.DataFrame()
 
 
 # --- [9가지 투자 성향 데이터베이스] ---
@@ -277,8 +239,7 @@ TYPE_DATABASE = {
     ],
 }
 
-
-# --- [10가지 미래 성장 테마 및 종목 데이터베이스 (스페이스X 반영)] ---
+# --- [10가지 미래 성장 테마 데이터베이스] ---
 THEME_DATABASE = {
     "AI 반도체 및 인프라": [
         ("엔비디아", "NVDA", "yahoo"),
@@ -321,11 +282,7 @@ THEME_DATABASE = {
         ("HJ중공업", "097230", "naver"),
     ],
     "우주항공 및 양자 테크": [
-        (
-            "스페이스X (비상장)",
-            "SPACE",
-            "info",
-        ),  # 비상장이므로 안내용 처리
+        ("스페이스X", "SPCX", "yahoo"),
         ("로켓랩", "RKLB", "yahoo"),
         ("아이온큐", "IONQ", "yahoo"),
         ("리게티 컴퓨팅", "RGTI", "yahoo"),
@@ -366,7 +323,6 @@ THEME_DATABASE = {
     ],
 }
 
-
 # --- [사이드바 영역] ---
 with st.sidebar:
   st.header("🔍 미래 성장 테마 탐색")
@@ -382,12 +338,11 @@ with st.sidebar:
       " 실시간 링크 카드가 표시됩니다."
   )
 
-
 # 세션 상태 초기화
 if "submitted" not in st.session_state:
   st.session_state.submitted = False
 
-# 제출을 안 한 상태일 때만 질문과 버튼을 보여줌
+# 제출 전 (설문 화면)
 if not st.session_state.submitted:
   st.markdown("### 📋 투자 성향 진단 설문")
   st.write("아래 문항에 응답하신 후 **[결과 확인하기]** 버튼을 눌러주세요.")
@@ -428,55 +383,47 @@ if not st.session_state.submitted:
 
   st.markdown("---")
   if st.button("결과 확인하기", type="primary", use_container_width=True):
-    if "원금 손실은 절대" in q1:
-      s1 = 1
-    elif "어느 정도의 시장 변동" in q1:
-      s1 = 2
-    else:
-      s1 = 3
-
-    if "은퇴 및 노후" in q2:
-      s2 = 1
-    elif "내집 마련" in q2:
-      s2 = 2
-    else:
-      s2 = 3
-
-    if "바로 매도" in q3:
-      s3 = 1
-    elif "지켜보며 회복" in q3:
-      s3 = 2
-    else:
-      s3 = 3
+    s1 = 1 if "원금 손실은 절대" in q1 else (2 if "어느 정도의 시장 변동" in q1 else 3)
+    s2 = 1 if "은퇴 및 노후" in q2 else (2 if "내집 마련" in q2 else 3)
+    s3 = 1 if "바로 매도" in q3 else (2 if "지켜보며 회복" in q3 else 3)
 
     if s1 == 1:
-      if s2 == 1:
-        user_type = "보수형 - 노후 안정 지향형"
-      elif s2 == 2:
-        user_type = "보수형 - 목돈 마련 안정형"
-      else:
-        user_type = "보수형 - 단기 자금 파킹형"
+      user_type = (
+          "보수형 - 노후 안정 지향형"
+          if s2 == 1
+          else (
+              "보수형 - 목돈 마련 안정형"
+              if s2 == 2
+              else "보수형 - 단기 자금 파킹형"
+          )
+      )
     elif s1 == 2:
-      if s2 == 1:
-        user_type = "중립형 - 은퇴 준비 밸런스형"
-      elif s2 == 2:
-        user_type = "중립형 - 6:4 표준 성장형"
-      else:
-        user_type = "중립형 - 단기 스윙 밸런스형"
+      user_type = (
+          "중립형 - 은퇴 준비 밸런스형"
+          if s2 == 1
+          else (
+              "중립형 - 6:4 표준 성장형"
+              if s2 == 2
+              else "중립형 - 단기 스윙 밸런스형"
+          )
+      )
     else:
-      if s2 == 1:
-        user_type = "공격형 - 장기 기술주 집중형"
-      elif s2 == 2:
-        user_type = "공격형 - 고성장 시드머니형"
-      else:
-        user_type = "공격형 - 초고위험 트레이딩형"
+      user_type = (
+          "공격형 - 장기 기술주 집중형"
+          if s2 == 1
+          else (
+              "공격형 - 고성장 시드머니형"
+              if s2 == 2
+              else "공격형 - 초고위험 트레이딩형"
+          )
+      )
 
     st.session_state.diagnosed_type = user_type
     st.session_state.selected_type = user_type
     st.session_state.submitted = True
     st.rerun()
 
-# 제출을 완료한 상태일 때 (결과 화면)
+# 제출 후 (결과 대시보드 화면)
 else:
   st.success("설문 진단이 완료되었습니다!")
 
@@ -502,27 +449,46 @@ else:
 
   st.markdown("---")
 
-  # 선택된 유형의 자산 데이터 가져오기
+  # 데이터 가져오기
   assets = TYPE_DATABASE[st.session_state.selected_type]
   names = [item["name"] for item in assets]
   tickers = [item["ticker"] for item in assets]
   weights = [item["weight"] for item in assets]
 
+  price_df = get_portfolio_data(tickers, period=selected_period)
+
   returns = []
-  div_yields = []
   for item in assets:
-    ret, div = get_asset_data(
-        item["ticker"], period=selected_period, fallback_return=item["fallback"]
-    )
+    t = item["ticker"]
+    fallback = item["fallback"]
+    try:
+      if t in price_df and not price_df[t].dropna().empty:
+        s_series = price_df[t].dropna()
+        start, latest = s_series.iloc[0], s_series.iloc[-1]
+        if selected_period == "3y" and start > 0:
+          ret = round(
+              (pow(latest / start, 1 / 3) - 1) * 100,
+              2,
+          )
+        elif selected_period == "5y" and start > 0:
+          ret = round(
+              (pow(latest / start, 1 / 5) - 1) * 100,
+              2,
+          )
+        else:
+          ret = round(((latest - start) / start) * 100, 2)
+      else:
+        ret = fallback
+    except Exception:
+      ret = fallback
     returns.append(ret)
-    div_yields.append(div)
 
   portfolio_return = sum((w / 100) * r for w, r in zip(weights, returns))
 
-  # 성과 지표 강조 카드 박스
+  # 성과 강조 카드
   st.markdown(
       f"""
-    <div style="background-color: #f0f4f8; padding: 20px; border-radius: 10px; border-left: 5px solid #1a73e8; margin-bottom: 25px;">
+    <div style="background-color: #f0f4f8; padding: 20px; border-radius: 10px; border-left: 5px solid #1a73e8; margin-bottom: 20px;">
         <h4 style="margin: 0; color: #1a73e8;">[{st.session_state.selected_type}] 포트폴리오 요약</h4>
         <p style="font-size: 22px; font-weight: bold; margin: 10px 0 0 0; color: #333;">{period_label} 환산 종합 성과: +{round(portfolio_return, 2)}%</p>
     </div>
@@ -530,87 +496,99 @@ else:
       unsafe_allow_html=True,
   )
 
-  # 데이터프레임 구성 및 시각화를 좌우 2단 컬럼으로 배치
-  df_data = {
-      "자산군": names,
-      "대표 ETF 상품 (티커)": tickers,
-      "비중(%)": weights,
-      f"{period_label} 성과(%)": returns,
-      "현재 배당수익률(%)": div_yields,
-  }
-  df = pd.DataFrame(df_data)
-  df.index = range(1, len(df) + 1)
-
-  col_tab1, col_tab2 = st.columns([1.3, 1])
-
-  with col_tab1:
-    st.write(f"### 자산군별 비중 및 {period_label} 성과")
-    st.dataframe(df, use_container_width=True)
-    st.caption(
-        "💡 일반 개인이 직접 채권이나 실물 자산을 매수하기 어렵기 때문에, 증권사에서"
-        " 쉽게 거래할 수 있는 세계적인 대표 미국 ETF 상품을 연동하고 있습니다."
-    )
-
-  with col_tab2:
-    st.write("### 자산 배분 비중 분석")
-    fig_pie = px.pie(
-        df,
-        values="비중(%)",
-        names="자산군",
-        hole=0.4,
-        color_discrete_sequence=px.colors.qualitative.Set3,
-    )
-    fig_pie.update_layout(
-        margin=dict(t=10, b=10, l=10, r=10), height=280, legend=dict(orientation="h")
-    )
-    st.plotly_chart(fig_pie, use_container_width=True)
-
-  # --- [맞춤 추천 자산 카드 섹션] ---
-  st.markdown("---")
-  st.markdown(
-      f"### 🎯 [{st.session_state.selected_type}] 맞춤 추천 자산 및 관련 링크"
+  # --- [멀티탭 구조 도입] ---
+  tab1, tab2, tab3 = st.tabs(
+      [
+          "📊 자산 배분 및 구성 비중",
+          "📈 포트폴리오 백테스팅 (수익률 추이)",
+          "🎯 맞춤 추천 자산 링크",
+      ]
   )
 
-  cols = st.columns(len(assets))
-  for idx, item in enumerate(assets):
-    with cols[idx]:
-      st.markdown(
-          f"""
-            <div class="card">
-                <b>{item['name']}</b><br>
-                <span style="color: #666; font-size: 13px;">티커: {item['ticker']} ({item['weight']}%)</span><br><br>
-                <a href="https://finance.yahoo.com/quote/{item['ticker']}/" target="_blank" style="text-decoration: none; color: #1a73e8; font-weight: bold; font-size: 14px;">🔗 야후 파이낸스 보기</a>
-            </div>
-            """,
-          unsafe_allow_html=True,
+  with tab1:
+    col_t1, col_t2 = st.columns([1.3, 1])
+    df_data = {
+        "자산군": names,
+        "대표 ETF 상품 (티커)": tickers,
+        "비중(%)": weights,
+        f"{period_label} 성과(%)": returns,
+    }
+    df = pd.DataFrame(df_data)
+    df.index = range(1, len(df) + 1)
+
+    with col_t1:
+      st.write(f"### 자산군별 비중 및 {period_label} 성과")
+      st.dataframe(df, use_container_width=True)
+
+    with col_t2:
+      st.write("### 자산 배분 비중 분석")
+      fig_pie = px.pie(
+          df,
+          values="비중(%)",
+          names="자산군",
+          hole=0.4,
+          color_discrete_sequence=px.colors.qualitative.Set3,
       )
+      fig_pie.update_layout(
+          margin=dict(t=10, b=10, l=10, r=10),
+          height=260,
+          legend=dict(orientation="h"),
+      )
+      st.plotly_chart(fig_pie, use_container_width=True)
+
+  with tab2:
+    st.write(f"### 📉 포트폴리오 누적 수익률 추이 ({period_label})")
+    try:
+      if not price_df.empty:
+        norm_df = price_df.dropna()
+        if not norm_df.empty:
+          norm_df = norm_df / norm_df.iloc[0]
+          portfolio_series = sum(
+              norm_df[t] * (w / 100) for t, w in zip(tickers, weights) if t in norm_df
+          )
+          st.line_chart(portfolio_series)
+        else:
+          st.info(
+              "선택한 기간의 시계열 차트 데이터를 계산할 수 없습니다 (Fallback"
+              " 모드)."
+          )
+      else:
+        st.info("데이터 로딩 중...")
+    except Exception as e:
+      st.warning(f"차트 생성 중 오류가 발생했습니다: {e}")
+
+  with tab3:
+    st.write(
+        f"### 🎯 [{st.session_state.selected_type}] 맞춤 추천 자산 및 관련 링크"
+    )
+    cols = st.columns(len(assets))
+    for idx, item in enumerate(assets):
+      with cols[idx]:
+        st.markdown(
+            f"""
+                <div class="card">
+                    <b>{item['name']}</b><br>
+                    <span style="color: #666; font-size: 13px;">티커: {item['ticker']} ({item['weight']}%)</span><br><br>
+                    <a href="https://finance.yahoo.com/quote/{item['ticker']}/" target="_blank" style="text-decoration: none; color: #1a73e8; font-weight: bold; font-size: 14px;">🔗 야후 파이낸스 보기</a>
+                </div>
+                """,
+            unsafe_allow_html=True,
+        )
 
 # --- [사이드바 선택 테마별 종목 탐색 카드 섹션] ---
 if selected_theme != "선택 안 함 (기본 보기)":
   st.markdown("---")
   st.markdown(f"### 🚀 미래 성장 테마 탐색: [{selected_theme}]")
-  st.write(
-      "선택하신 핵심 테마의 글로벌 및 국내 대표 종목들의 실시간 시세 및 정보를"
-      " 확인하세요."
-  )
-
   theme_stocks = THEME_DATABASE[selected_theme]
-  t_cols = st.columns(3)  # 3열 그리드 배치
+  t_cols = st.columns(3)
 
   for idx, (s_name, s_code, s_type) in enumerate(theme_stocks):
     if s_type == "yahoo":
       link = f"https://finance.yahoo.com/quote/{s_code}/"
-      link_label = "야후 파이낸스"
-      link_html = f'<a href="{link}" target="_blank" style="text-decoration: none; color: #1a73e8; font-weight: bold; font-size: 14px;">🔗 {link_label} 바로가기</a>'
-    elif s_type == "naver":
-      link = f"https://finance.naver.com/item/main.naver?code={s_code}"
-      link_label = "네이버 증권"
-      link_html = f'<a href="{link}" target="_blank" style="text-decoration: none; color: #1a73e8; font-weight: bold; font-size: 14px;">🔗 {link_label} 바로가기</a>'
+      link_html = f'<a href="{link}" target="_blank" style="text-decoration: none; color: #1a73e8; font-weight: bold; font-size: 14px;">🔗 야후 파이낸스 바로가기</a>'
     else:
-      link_html = (
-          '<span style="color: #888; font-size: 13px;">🔒 비상장 기업 (민간'
-          ' 우주탐사)</span>'
-      )
+      link = f"https://finance.naver.com/item/main.naver?code={s_code}"
+      link_html = f'<a href="{link}" target="_blank" style="text-decoration: none; color: #1a73e8; font-weight: bold; font-size: 14px;">🔗 네이버 증권 바로가기</a>'
 
     with t_cols[idx % 3]:
       st.markdown(
