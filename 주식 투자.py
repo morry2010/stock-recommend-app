@@ -354,9 +354,7 @@ if not st.session_state.submitted:
                 user_type = "공격형 - 초고위험 트레이딩형"
 
         st.session_state.diagnosed_type = user_type
-        st.session_state.selected_type = (
-            user_type  # 처음엔 진단된 결과로 선택 설정
-        )
+        st.session_state.selected_type = user_type
         st.session_state.submitted = True
         st.rerun()
 
@@ -364,14 +362,12 @@ if not st.session_state.submitted:
 else:
     st.success("설문 진단이 완료되었습니다!")
 
-    # 상단에 진단 결과 안내 및 [다른 유형 즉시 보기] 셀렉트박스 배치
     st.write(
         f"설문 기반 추천 유형: **{st.session_state.diagnosed_type}**"
     )
 
     col_sel1, col_sel2 = st.columns([2, 1])
     with col_sel1:
-        # 다른 9가지 성향을 자유롭게 선택해서 볼 수 있는 드롭다운
         all_types = list(TYPE_DATABASE.keys())
         current_index = all_types.index(st.session_state.selected_type)
         selected_view_type = st.selectbox(
@@ -441,49 +437,16 @@ else:
     )
     st.plotly_chart(fig_pie, use_container_width=True)
 
-    # --- [영역 1] 추천 자산 관련 링크 ---
+    # --- [영역 1] 선택된 세부 유형의 자산별 추천 링크 (동적 연동 수정 완료) ---
     st.write("---")
-    st.write("### 맞춤 추천 자산 및 관련 링크")
-
-    if "보수형" in st.session_state.selected_type:
-        st.markdown(
-            "- **국고채/채권형 ETF(IEF/AGG)**: [야후"
-            " 파이낸스](https://finance.yahoo.com/quote/IEF/)"
-        )
-        st.markdown(
-            "- **대형 우량주/배당주(VOO/SCHD)**: [야후"
-            " 파이낸스](https://finance.yahoo.com/quote/SCHD/)"
-        )
-        st.markdown(
-            "- **금/현금성 자산(IAU/BIL)**: [야후"
-            " 파이낸스](https://finance.yahoo.com/quote/IAU/)"
-        )
-    elif "중립형" in st.session_state.selected_type:
-        st.markdown(
-            "- **S&P 500 ETF(VOO)**: [야후"
-            " 파이낸스](https://finance.yahoo.com/quote/VOO/)"
-        )
-        st.markdown(
-            "- **종합 채권(AGG)**: [야후"
-            " 파이낸스](https://finance.yahoo.com/quote/AGG/)"
-        )
-        st.markdown(
-            "- **섹터 주도주/원자재(XLK/GSG)**: [야후"
-            " 파이낸스](https://finance.yahoo.com/quote/XLK/)"
-        )
-    else:
-        st.markdown(
-            "- **나스닥 100(QQQ)**: [야후"
-            " 파이낸스](https://finance.yahoo.com/quote/QQQ/)"
-        )
-        st.markdown(
-            "- **비트코인 연계(BITO)**: [야후"
-            " 파이낸스](https://finance.yahoo.com/quote/BITO/)"
-        )
-        st.markdown(
-            "- **3배 레버리지(TQQQ)**: [야후"
-            " 파이낸스](https://finance.yahoo.com/quote/TQQQ/)"
-        )
+    st.write(f"### 🎯 [{st.session_state.selected_type}] 맞춤 추천 자산 및 관련 링크")
+    
+    # 선택된 세부 유형에 포함된 자산들을 루프를 돌며 자동으로 링크 생성
+    for item in assets:
+        asset_name = item["name"]
+        ticker = item["ticker"]
+        yahoo_link = f"https://finance.yahoo.com/quote/{ticker}/"
+        st.markdown(f"- **{asset_name} ({ticker})**: [야후 파이낸스 바로가기]({yahoo_link})")
 
     # --- [영역 2] 사이드바에서 선택한 섹터별 주요 종목 ---
     if selected_sector != "선택 안 함 (기본 보기)":
@@ -492,16 +455,13 @@ else:
 
         if selected_sector == "반도체":
             st.markdown(
-                "- **엔비디아**: [야후"
-                " 파이낸스](https://finance.yahoo.com/quote/NVDA/)"
+                "- **엔비디아**: [야후 파이낸스](https://finance.yahoo.com/quote/NVDA/)"
             )
             st.markdown(
-                "- **삼성전자**: [네이버"
-                " 증권](https://finance.naver.com/item/main.naver?code=005930)"
+                "- **삼성전자**: [네이버 증권](https://finance.naver.com/item/main.naver?code=005930)"
             )
             st.markdown(
-                "- **SK하이닉스**: [네이버"
-                " 증권](https://finance.naver.com/item/main.naver?code=000660)"
+                "- **SK하이닉스**: [네이버 증권](https://finance.naver.com/item/main.naver?code=000660)"
             )
             st.markdown(
                 "- **인텔**: [야후 파이낸스](https://finance.yahoo.com/quote/INTC/)"
@@ -511,37 +471,31 @@ else:
             )
         elif selected_sector == "테크/빅테크":
             st.markdown(
-                "- **엔비디아**: [야후"
-                " 파이낸스](https://finance.yahoo.com/quote/NVDA/)"
+                "- **엔비디아**: [야후 파이낸스](https://finance.yahoo.com/quote/NVDA/)"
             )
             st.markdown(
-                "- **테슬라**: [야후"
-                " 파이낸스](https://finance.yahoo.com/quote/TSLA/)"
+                "- **테슬라**: [야후 파이낸스](https://finance.yahoo.com/quote/TSLA/)"
             )
             st.markdown(
                 "- **애플**: [야후 파이낸스](https://finance.yahoo.com/quote/AAPL/)"
             )
         elif selected_sector == "2차전지/에너지":
             st.markdown(
-                "- **LG에너지솔루션**: [네이버"
-                " 증권](https://finance.naver.com/item/main.naver?code=373220)"
+                "- **LG에너지솔루션**: [네이버 증권](https://finance.naver.com/item/main.naver?code=373220)"
             )
             st.markdown(
-                "- **삼성SDI**: [네이버"
-                " 증권](https://finance.naver.com/item/main.naver?code=006400)"
+                "- **삼성SDI**: [네이버 증권](https://finance.naver.com/item/main.naver?code=006400)"
             )
         elif selected_sector == "헬스케어/바이오":
             st.markdown(
-                "- **삼성바이오로직스**: [네이버"
-                " 증권](https://finance.naver.com/item/main.naver?code=207940)"
+                "- **삼성바이오로직스**: [네이버 증권](https://finance.naver.com/item/main.naver?code=207940)"
             )
         elif selected_sector == "금융/고배당":
             st.markdown(
                 "- **SCHD ETF**: [야후 파이낸스](https://finance.yahoo.com/quote/SCHD/)"
             )
             st.markdown(
-                "- **KB금융**: [네이버"
-                " 증권](https://finance.naver.com/item/main.naver?code=105560)"
+                "- **KB금융**: [네이버 증권](https://finance.naver.com/item/main.naver?code=105560)"
             )
 
     # 다시 하기 버튼
