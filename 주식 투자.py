@@ -278,7 +278,7 @@ TYPE_DATABASE = {
 }
 
 
-# --- [10가지 미래 성장 테마 및 종목 데이터베이스] ---
+# --- [10가지 미래 성장 테마 및 종목 데이터베이스 (스페이스X 반영)] ---
 THEME_DATABASE = {
     "AI 반도체 및 인프라": [
         ("엔비디아", "NVDA", "yahoo"),
@@ -321,11 +321,15 @@ THEME_DATABASE = {
         ("HJ중공업", "097230", "naver"),
     ],
     "우주항공 및 양자 테크": [
+        (
+            "스페이스X (비상장)",
+            "SPACE",
+            "info",
+        ),  # 비상장이므로 안내용 처리
         ("로켓랩", "RKLB", "yahoo"),
         ("아이온큐", "IONQ", "yahoo"),
         ("리게티 컴퓨팅", "RGTI", "yahoo"),
         ("디웨이브 퀀텀", "QBTS", "yahoo"),
-        ("켄코아에어로스페이스", "274580", "naver"),
         ("이노스페이스", "462350", "naver"),
     ],
     "2차전지 및 에너지저장장치(ESS)": [
@@ -597,9 +601,16 @@ if selected_theme != "선택 안 함 (기본 보기)":
     if s_type == "yahoo":
       link = f"https://finance.yahoo.com/quote/{s_code}/"
       link_label = "야후 파이낸스"
-    else:
+      link_html = f'<a href="{link}" target="_blank" style="text-decoration: none; color: #1a73e8; font-weight: bold; font-size: 14px;">🔗 {link_label} 바로가기</a>'
+    elif s_type == "naver":
       link = f"https://finance.naver.com/item/main.naver?code={s_code}"
       link_label = "네이버 증권"
+      link_html = f'<a href="{link}" target="_blank" style="text-decoration: none; color: #1a73e8; font-weight: bold; font-size: 14px;">🔗 {link_label} 바로가기</a>'
+    else:
+      link_html = (
+          '<span style="color: #888; font-size: 13px;">🔒 비상장 기업 (민간'
+          ' 우주탐사)</span>'
+      )
 
     with t_cols[idx % 3]:
       st.markdown(
@@ -607,7 +618,7 @@ if selected_theme != "선택 안 함 (기본 보기)":
             <div class="card">
                 <b style="font-size: 16px; color: #1f2937;">{s_name}</b><br>
                 <span style="color: #666; font-size: 13px;">코드/티커: {s_code}</span><br><br>
-                <a href="{link}" target="_blank" style="text-decoration: none; color: #1a73e8; font-weight: bold; font-size: 14px;">🔗 {link_label} 바로가기</a>
+                {link_html}
             </div>
             """,
           unsafe_allow_html=True,
