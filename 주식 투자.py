@@ -38,8 +38,8 @@ st.markdown(
 
 st.title("맞춤형 투자 성향 진단 및 미래 성장 테마 대시보드 (Pro)")
 st.caption(
-    "설문을 통해 나의 투자 성향을 진단하고, 배당수익률 및 기준가 100 백테스팅이"
-    " 강화된 최적 포트폴리오를 탐색하세요."
+    "설문을 통해 나의 투자 성향을 진단하고, 배당수익률 및 누적 수익률이"
+    " 통일된 최적 포트폴리오를 탐색하세요."
 )
 
 
@@ -263,7 +263,7 @@ TYPE_DATABASE = {
     ],
 }
 
-# --- [10가지 미래 성장 테마 데이터베이스] ---
+# --- [10가지 미래 성장 테마 데이터베이스 (스페이스X SPCX 반영)] ---
 THEME_DATABASE = {
     "AI 반도체 및 인프라": [
         ("엔비디아", "NVDA", "yahoo"),
@@ -366,15 +366,33 @@ with st.sidebar:
 if "submitted" not in st.session_state:
   st.session_state.submitted = False
 
-# 제출 전 (설문 화면)
+# 제출 전 (한 페이지씩 깔끔하게 뜨는 설문 화면)
 if not st.session_state.submitted:
-  st.markdown("### 📋 투자 성향 진단 설문")
+  st.markdown("### 📋 맞춤형 투자 성향 진단 설문")
   st.write("아래 문항에 응답하신 후 **[결과 확인하기]** 버튼을 눌러주세요.")
   st.markdown("---")
 
-  q1 = st.radio(
-      "1. 투자 과정에서 마주할 수 있는 시장 변동성과 손실 위험에 대한 본인의"
-      " 태도는 어느 쪽에 가까우신가요?",
+  # 질문 순서 변경: 기존 1번을 3번으로, 기존 2번을 1번으로, 기존 3번을 2번으로 이동
+  q2_purpose = st.radio(
+      "1. 현재 자금을 모으거나 투자하려는 주된 목적은 무엇인가요?",
+      [
+          "은퇴 및 노후 대비 (장기적이고 안정적인 자산 증식)",
+          "내집 마련, 결혼 자금 등 특정 시점에 필요한 목돈(시드머니) 마련",
+          "단기 유휴 자금 활용 및 적극적인 자본 차익 추구",
+      ],
+  )
+
+  st.markdown("<br>", unsafe_allow_html=True)
+
+  q3_loss = st.radio(
+      "2. 투자한 자산의 원금 손실이 발생한다면 어떻게 하실 건가요?",
+      ["바로 매도해서 손실을 최소화함", "지켜보며 회복을 기다림", "추가 매수 기회로 활용함"],
+  )
+
+  st.markdown("<br>", unsafe_allow_html=True)
+
+  q1_attitude = st.radio(
+      "3. 투자 과정에서 마주할 수 있는 시장 변동성과 손실 위험에 대한 본인의 태도는 어느 쪽에 가까우신가요?",
       [
           (
               "원금 손실은 절대 방어해야 하며, 안정적으로 자산을 지키는 것이"
@@ -391,25 +409,29 @@ if not st.session_state.submitted:
       ],
   )
 
-  q2 = st.radio(
-      "2. 현재 자금을 모으거나 투자하려는 주된 목적은 무엇인가요?",
-      [
-          "은퇴 및 노후 대비 (장기적이고 안정적인 자산 증식)",
-          "내집 마련, 결혼 자금 등 특정 시점에 필요한 목돈(시드머니) 마련",
-          "단기 유휴 자금 활용 및 적극적인 자본 차익 추구",
-      ],
-  )
-
-  q3 = st.radio(
-      "3. 투자한 자산의 원금 손실이 발생한다면 어떻게 하실 건가요?",
-      ["바로 매도해서 손실을 최소화함", "지켜보며 회복을 기다림", "추가 매수 기회로 활용함"],
-  )
-
   st.markdown("---")
   if st.button("결과 확인하기", type="primary", use_container_width=True):
-    s1 = 1 if "원금 손실은 절대" in q1 else (2 if "어느 정도의 시장 변동" in q1 else 3)
-    s2 = 1 if "은퇴 및 노후" in q2 else (2 if "내집 마련" in q2 else 3)
-    s3 = 1 if "바로 매도" in q3 else (2 if "지켜보며 회복" in q3 else 3)
+    # 매핑 로직 (변경 된 순서 기준)
+    if "원금 손실은 절대" in q1_attitude:
+      s1 = 1
+    elif "어느 정도의 시장 변동" in q1_attitude:
+      s1 = 2
+    else:
+      s1 = 3
+
+    if "은퇴 및 노후" in q2_purpose:
+      s2 = 1
+    elif "내집 마련" in q2_purpose:
+      s2 = 2
+    else:
+      s2 = 3
+
+    if "바로 매도" in q3_loss:
+      s3 = 1
+    elif "지켜보며 회복" in q3_loss:
+      s3 = 2
+    else:
+      s3 = 3
 
     if s1 == 1:
       user_type = (
@@ -504,24 +526,44 @@ else:
     returns.append(ret)
     div_yields.append(div_dict.get(t, 0.0))
 
-  portfolio_return = sum((w / 100) * r for w, r in zip(weights, returns))
+  # 포트폴리오 누적 수익률 계산 (백테스팅과 동일한 누적 기준)
+  try:
+    if not price_df.empty:
+      norm_df = price_df.dropna()
+      if not norm_df.empty:
+        norm_df = (norm_df / norm_df.iloc[0]) * 100
+        portfolio_series = sum(
+            norm_df[t] * (w / 100) for t, w in zip(tickers, weights) if t in norm_df
+        )
+        total_cumulative_return = round(portfolio_series.iloc[-1] - 100, 2)
+      else:
+        total_cumulative_return = sum(
+            (w / 100) * r for w, r in zip(weights, returns)
+        )
+    else:
+      total_cumulative_return = sum(
+          (w / 100) * r for w, r in zip(weights, returns)
+      )
+  except Exception:
+    total_cumulative_return = sum((w / 100) * r for w, r in zip(weights, returns))
 
-  # 성과 강조 카드
+  # 상단 성과 강조 카드 (+ / - 기호 충돌 방지 및 누적 수익률 통일)
+  sign_str = "+" if total_cumulative_return > 0 else ""
   st.markdown(
       f"""
     <div style="background-color: #f0f4f8; padding: 20px; border-radius: 10px; border-left: 5px solid #1a73e8; margin-bottom: 20px;">
         <h4 style="margin: 0; color: #1a73e8;">[{st.session_state.selected_type}] 포트폴리오 요약</h4>
-        <p style="font-size: 22px; font-weight: bold; margin: 10px 0 0 0; color: #333;">{period_label} 환산 종합 성과: +{round(portfolio_return, 2)}%</p>
+        <p style="font-size: 22px; font-weight: bold; margin: 10px 0 0 0; color: #333;">{period_label} 총 누적 성과: {sign_str}{total_cumulative_return}%</p>
     </div>
     """,
       unsafe_allow_html=True,
   )
 
-  # --- [멀티탭 구조 도입] ---
+  # --- [멀티탭 구조 도입 (기준가 100 문구 삭제)] ---
   tab1, tab2, tab3 = st.tabs(
       [
           "📊 자산 배분 및 배당수익률",
-          "📈 포트폴리오 백테스팅 (기준가 100)",
+          "📈 포트폴리오 백테스팅",
           "🎯 맞춤 추천 자산 링크",
       ]
   )
@@ -559,7 +601,7 @@ else:
       st.plotly_chart(fig_pie, use_container_width=True)
 
   with tab2:
-    st.write(f"### 📉 포트폴리오 누적 수익률 추이 ({period_label} / 시작가 100)")
+    st.write(f"### 📉 포트폴리오 누적 수익률 추이 ({period_label})")
     st.caption(
         "💡 포트폴리오 초기 가치를 100으로 설정하여 기간별 수익과 손실을 직관적으로"
         " 비교할 수 있습니다."
