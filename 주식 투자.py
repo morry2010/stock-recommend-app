@@ -366,108 +366,165 @@ with st.sidebar:
 if "submitted" not in st.session_state:
   st.session_state.submitted = False
 
-# 제출 전 (한 페이지씩 깔끔하게 뜨는 설문 화면)
+if "survey_step" not in st.session_state:
+  st.session_state.survey_step = 1
+
+if "q1_ans" not in st.session_state:
+  st.session_state.q1_ans = None
+if "q2_ans" not in st.session_state:
+  st.session_state.q2_ans = None
+if "q3_ans" not in st.session_state:
+  st.session_state.q3_ans = None
+
+# 제출 전 (한 페이지씩 단계별로 뜨는 설문 화면)
 if not st.session_state.submitted:
   st.markdown("### 📋 맞춤형 투자 성향 진단 설문")
-  st.write("아래 문항에 응답하신 후 **[결과 확인하기]** 버튼을 눌러주세요.")
+  st.progress(st.session_state.survey_step / 3)
+  st.write(f"**진행 단계: {st.session_state.survey_step} / 3 단계**")
   st.markdown("---")
 
-  # 질문 순서 변경: 기존 1번을 3번으로, 기존 2번을 1번으로, 기존 3번을 2번으로 이동
-  q2_purpose = st.radio(
-      "1. 현재 자금을 모으거나 투자하려는 주된 목적은 무엇인가요?",
-      [
-          "은퇴 및 노후 대비 (장기적이고 안정적인 자산 증식)",
-          "내집 마련, 결혼 자금 등 특정 시점에 필요한 목돈(시드머니) 마련",
-          "단기 유휴 자금 활용 및 적극적인 자본 차익 추구",
-      ],
-  )
+  # 1단계: 기존 질문 3번 (원금 손실 대처)
+  if st.session_state.survey_step == 1:
+    st.subheader(
+        "1. 투자한 자산의 원금 손실이 발생한다면 어떻게 하실 건가요?"
+    )
+    q3_choice = st.radio(
+        "선택해 주세요:",
+        ["바로 매도해서 손실을 최소화함", "지켜보며 회복을 기다림", "추가 매수 기회로 활용함"],
+        key="step1_radio",
+    )
 
-  st.markdown("<br>", unsafe_allow_html=True)
+    st.markdown("<br>", unsafe_allow_html=True)
+    col1, col2 = st.columns([5, 1])
+    with col2:
+      if st.button("다음 ➡", type="primary", use_container_width=True):
+        st.session_state.q3_ans = q3_choice
+        st.session_state.survey_step = 2
+        st.rerun()
 
-  q3_loss = st.radio(
-      "2. 투자한 자산의 원금 손실이 발생한다면 어떻게 하실 건가요?",
-      ["바로 매도해서 손실을 최소화함", "지켜보며 회복을 기다림", "추가 매수 기회로 활용함"],
-  )
+  # 2단계: 기존 질문 2번 (투자 목적)
+  elif st.session_state.survey_step == 2:
+    st.subheader(
+        "2. 현재 자금을 모으거나 투자하려는 주된 목적은 무엇인가요?"
+    )
+    q2_choice = st.radio(
+        "선택해 주세요:",
+        [
+            "은퇴 및 노후 대비 (장기적이고 안정적인 자산 증식)",
+            "내집 마련, 결혼 자금 등 특정 시점에 필요한 목돈(시드머니) 마련",
+            "단기 유휴 자금 활용 및 적극적인 자본 차익 추구",
+        ],
+        key="step2_radio",
+    )
 
-  st.markdown("<br>", unsafe_allow_html=True)
+    st.markdown("<br>", unsafe_allow_html=True)
+    col1, col2, col3 = st.columns([1, 4, 1])
+    with col1:
+      if st.button("⬅ 이전", use_container_width=True):
+        st.session_state.survey_step = 1
+        st.rerun()
+    with col3:
+      if st.button("다음 ➡", type="primary", use_container_width=True):
+        st.session_state.q2_ans = q2_choice
+        st.session_state.survey_step = 3
+        st.rerun()
 
-  q1_attitude = st.radio(
-      "3. 투자 과정에서 마주할 수 있는 시장 변동성과 손실 위험에 대한 본인의 태도는 어느 쪽에 가까우신가요?",
-      [
-          (
-              "원금 손실은 절대 방어해야 하며, 안정적으로 자산을 지키는 것이"
-              " 최우선입니다."
-          ),
-          (
-              "어느 정도의 시장 변동이나 소폭의 손실은 감수하겠지만, 무리한"
-              " 위험은 피하고 싶습니다."
-          ),
-          (
-              "더 높은 기대 수익을 얻을 수 있다면, 원금의 단기 하락이나 큰"
-              " 변동성은 충분히 감수할 수 있습니다."
-          ),
-      ],
-  )
+  # 3단계: 기존 질문 1번 (변동성 태도)
+  elif st.session_state.survey_step == 3:
+    st.subheader(
+        "3. 투자 과정에서 마주할 수 있는 시장 변동성과 손실 위험에 대한 본인의"
+        " 태도는 어느 쪽에 가까우신가요?"
+    )
+    q1_choice = st.radio(
+        "선택해 주세요:",
+        [
+            (
+                "원금 손실은 절대 방어해야 하며, 안정적으로 자산을 지키는 것이"
+                " 최우선입니다."
+            ),
+            (
+                "어느 정도의 시장 변동이나 소폭의 손실은 감수하겠지만, 무리한"
+                " 위험은 피하고 싶습니다."
+            ),
+            (
+                "더 높은 기대 수익을 얻을 수 있다면, 원금의 단기 하락이나 큰"
+                " 변동성은 충분히 감수할 수 있습니다."
+            ),
+        ],
+        key="step3_radio",
+    )
 
-  st.markdown("---")
-  if st.button("결과 확인하기", type="primary", use_container_width=True):
-    # 매핑 로직 (변경 된 순서 기준)
-    if "원금 손실은 절대" in q1_attitude:
-      s1 = 1
-    elif "어느 정도의 시장 변동" in q1_attitude:
-      s1 = 2
-    else:
-      s1 = 3
+    st.markdown("<br>", unsafe_allow_html=True)
+    col1, col2, col3 = st.columns([1, 4, 1])
+    with col1:
+      if st.button("⬅ 이전", use_container_width=True):
+        st.session_state.survey_step = 2
+        st.rerun()
+    with col3:
+      if st.button("결과 확인하기", type="primary", use_container_width=True):
+        st.session_state.q1_ans = q1_choice
 
-    if "은퇴 및 노후" in q2_purpose:
-      s2 = 1
-    elif "내집 마련" in q2_purpose:
-      s2 = 2
-    else:
-      s2 = 3
+        # 매핑 로직 (저장된 답변 활용)
+        q1 = st.session_state.q1_ans
+        q2 = st.session_state.q2_ans
+        q3 = st.session_state.q3_ans
 
-    if "바로 매도" in q3_loss:
-      s3 = 1
-    elif "지켜보며 회복" in q3_loss:
-      s3 = 2
-    else:
-      s3 = 3
+        if "원금 손실은 절대" in q1:
+          s1 = 1
+        elif "어느 정도의 시장 변동" in q1:
+          s1 = 2
+        else:
+          s1 = 3
 
-    if s1 == 1:
-      user_type = (
-          "보수형 - 노후 안정 지향형"
-          if s2 == 1
-          else (
-              "보수형 - 목돈 마련 안정형"
-              if s2 == 2
-              else "보수형 - 단기 자금 파킹형"
+        if "은퇴 및 노후" in q2:
+          s2 = 1
+        elif "내집 마련" in q2:
+          s2 = 2
+        else:
+          s2 = 3
+
+        if "바로 매도" in q3:
+          s3 = 1
+        elif "지켜보며 회복" in q3:
+          s3 = 2
+        else:
+          s3 = 3
+
+        if s1 == 1:
+          user_type = (
+              "보수형 - 노후 안정 지향형"
+              if s2 == 1
+              else (
+                  "보수형 - 목돈 마련 안정형"
+                  if s2 == 2
+                  else "보수형 - 단기 자금 파킹형"
+              )
           )
-      )
-    elif s1 == 2:
-      user_type = (
-          "중립형 - 은퇴 준비 밸런스형"
-          if s2 == 1
-          else (
-              "중립형 - 6:4 표준 성장형"
-              if s2 == 2
-              else "중립형 - 단기 스윙 밸런스형"
+        elif s1 == 2:
+          user_type = (
+              "중립형 - 은퇴 준비 밸런스형"
+              if s2 == 1
+              else (
+                  "중립형 - 6:4 표준 성장형"
+                  if s2 == 2
+                  else "중립형 - 단기 스윙 밸런스형"
+              )
           )
-      )
-    else:
-      user_type = (
-          "공격형 - 장기 기술주 집중형"
-          if s2 == 1
-          else (
-              "공격형 - 고성장 시드머니형"
-              if s2 == 2
-              else "공격형 - 초고위험 트레이딩형"
+        else:
+          user_type = (
+              "공격형 - 장기 기술주 집중형"
+              if s2 == 1
+              else (
+                  "공격형 - 고성장 시드머니형"
+                  if s2 == 2
+                  else "공격형 - 초고위험 트레이딩형"
+              )
           )
-      )
 
-    st.session_state.diagnosed_type = user_type
-    st.session_state.selected_type = user_type
-    st.session_state.submitted = True
-    st.rerun()
+        st.session_state.diagnosed_type = user_type
+        st.session_state.selected_type = user_type
+        st.session_state.submitted = True
+        st.rerun()
 
 # 제출 후 (결과 대시보드 화면)
 else:
@@ -526,7 +583,7 @@ else:
     returns.append(ret)
     div_yields.append(div_dict.get(t, 0.0))
 
-  # 포트폴리오 누적 수익률 계산 (백테스팅과 동일한 누적 기준)
+  # 포트폴리오 누적 수익률 계산
   try:
     if not price_df.empty:
       norm_df = price_df.dropna()
@@ -547,7 +604,7 @@ else:
   except Exception:
     total_cumulative_return = sum((w / 100) * r for w, r in zip(weights, returns))
 
-  # 상단 성과 강조 카드 (+ / - 기호 충돌 방지 및 누적 수익률 통일)
+  # 상단 성과 강조 카드 (+ / - 기호 충돌 방지)
   sign_str = "+" if total_cumulative_return > 0 else ""
   st.markdown(
       f"""
@@ -559,7 +616,7 @@ else:
       unsafe_allow_html=True,
   )
 
-  # --- [멀티탭 구조 도입 (기준가 100 문구 삭제)] ---
+  # --- [멀티탭 구조 도입] ---
   tab1, tab2, tab3 = st.tabs(
       [
           "📊 자산 배분 및 배당수익률",
@@ -702,4 +759,5 @@ with col_btn2:
       "🔄 처음부터 설문 다시 진단하기", type="secondary", use_container_width=True
   ):
     st.session_state.submitted = False
+    st.session_state.survey_step = 1
     st.rerun()
