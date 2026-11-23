@@ -38,7 +38,7 @@ st.markdown(
 
 st.title("맞춤형 투자 성향 진단 및 미래 성장 테마 대시보드 (Pro)")
 st.caption(
-    "설문을 통해 나의 투자 성향을 진단하고, 배당수익률 및 로그 스케일 백테스팅이"
+    "설문을 통해 나의 투자 성향을 진단하고, 배당수익률 및 기준가 100 백테스팅이"
     " 강화된 최적 포트폴리오를 탐색하세요."
 )
 
@@ -521,7 +521,7 @@ else:
   tab1, tab2, tab3 = st.tabs(
       [
           "📊 자산 배분 및 배당수익률",
-          "📈 포트폴리오 백테스팅 (기준가 100 & 로그 스케일)",
+          "📈 포트폴리오 백테스팅 (기준가 100)",
           "🎯 맞춤 추천 자산 링크",
       ]
   )
@@ -539,7 +539,7 @@ else:
     df.index = range(1, len(df) + 1)
 
     with col_t1:
-      st.write(f"### 자산군별 비중, 성과 및 배당수익률")
+      st.write("### 자산군별 비중, 성과 및 배당수익률")
       st.dataframe(df, use_container_width=True)
 
     with col_t2:
@@ -559,25 +559,20 @@ else:
       st.plotly_chart(fig_pie, use_container_width=True)
 
   with tab2:
-    st.write(
-        f"### 📉 포트폴리오 누적 수익률 추이 ({period_label} / 시작가 100)"
-    )
+    st.write(f"### 📉 포트폴리오 누적 수익률 추이 ({period_label} / 시작가 100)")
     st.caption(
-        "💡 **로그 스케일(Log Scale)**이 적용되어 있어 100 기준 위쪽(수익) 구간은"
-        " 넓게, 아래쪽(손실) 구간은 좁게 표현되어 성과 변동을 명확하게"
-        " 확인할 수 있습니다."
+        "💡 포트폴리오 초기 가치를 100으로 설정하여 기간별 수익과 손실을 직관적으로"
+        " 비교할 수 있습니다."
     )
     try:
       if not price_df.empty:
         norm_df = price_df.dropna()
         if not norm_df.empty:
-          # 시작점을 100으로 설정
           norm_df = (norm_df / norm_df.iloc[0]) * 100
           portfolio_series = sum(
               norm_df[t] * (w / 100) for t, w in zip(tickers, weights) if t in norm_df
           )
 
-          # Plotly를 이용한 커스텀 로그 스케일 차트 생성
           fig_bt = go.Figure()
           fig_bt.add_trace(
               go.Scatter(
@@ -590,15 +585,13 @@ else:
                   fillcolor="rgba(26, 115, 232, 0.05)",
               )
           )
-          # 기준선 100 표시
           fig_bt.add_hline(
               y=100, line_dash="dash", line_color="gray", annotation_text="시작점 (100)"
           )
 
           fig_bt.update_layout(
               xaxis_title="기간",
-              yaxis_title="포트폴리오 기준가 (Log Scale)",
-              yaxis_type="log",  # 로그 스케일 적용 (100 위쪽 확대, 아래쪽 압축)
+              yaxis_title="포트폴리오 기준가",
               margin=dict(t=20, b=20, l=20, r=20),
               height=420,
               hovermode="x unified",
